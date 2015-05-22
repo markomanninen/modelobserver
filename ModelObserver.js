@@ -1,4 +1,4 @@
-function observer() {
+function ModelObserver() {
     function isObject(item) {
         return item && item.constructor.name == 'Object';
     }
