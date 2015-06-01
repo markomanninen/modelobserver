@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        <meta charset="UTF-8">
+        
+        <title>Model Observer</title>
+
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/interface.min.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+
+        <style>
+            #console-log-div {
+              border: 1px solid gray;
+              padding: 10px 10px;
+              border-radius: 5px;
+              width: 95% !important;
+              background-color: #333;
+              color: yellow;
+            }
+            #console-log-text {
+                margin-top: -5px;
+                margin-bottom: 5px;
+            }
+            #console-log-div legend {
+                color: black;
+                position: relative;
+                top: -15px;
+                left: -10px;
+                font-size: 16px;
+                text-transform: capitalize;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <script src="bower_components/console-log-div/console-log-div.js"></script>
+
+        <script id="log">
+
+
+            // initialize observer and handler
+
+            var obs = BaseModelObserver();
+            
+            var moh = ModelObserverHandlers(obs);
+
+            obs.handler.define(moh.valueHandler);
+
+            // create model
+
+            var model = {
+                user: {
+                    firstname: "ROGER",
+                    lastname: ""
+                }
+            };
+
+
+            console.log("Original model:", model);
+            console.log("User:", model.user);
+            console.log("Firstname:", model.user.firstname);
+            console.log("Lastname:", model.user.lastname);
+            console.log("");
+
+            var c = new obs.createModel(model);
+
+            // modify
+
+            c.user.firstname = "Roger";
+            c.user.lastname = "Moore";
+
+            // print 
+
+            console.log("Modified model:", c.value);
+            console.log("Root.created:", c.created);
+            console.log("User.updated:", c.user.updated);
+            console.log("User.path:", c.user.path);
+            console.log("User.parent:", c.user.parent);
+            console.log("User.canget:", c.user.canget);
+            console.log("User.canset:", c.user.canset);
+            console.log("User.node:", c.user.node);
+            console.log("User.branch:", c.user.branch);
+            console.log("User.firstname:", c.user.firstname);
+            console.log("User.lastname:", c.user.lastname);
+            console.log("User.firstname.value:", c.user.firstname.value);
+            console.log("User.lastname.value:", c.user.lastname.value);
+
+            console.log("");
+            console.log("Just a logger:");
+            console.log("");
+
+            //var obs = BaseModelObserver();
+
+            var logger = {
+                initter: function(value, model, property, property_stack, parent) {
+                    console.log(["init", value, model, property, property_stack.join('.'), parent]);
+                    return value;
+                },
+                getter: function(value, property_stack) {
+                    console.log(["get", value, property_stack.join('.')]);
+                    return value;
+                },
+                setter: function(value, old_value, property_stack) {
+                    console.log(["set", value, old_value, property_stack.join('.')]);
+                    return value;
+                }
+            };
+
+            // add new log handler upon valueHandler!
+
+            obs.handler.define(logger);
+
+            var obj = {foo: {bar: 1}};
+
+            var model = obs.createModel(obj);
+
+            console.log(model);
+
+        </script>
+
+    </body>
+</html>
