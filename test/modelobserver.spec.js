@@ -3,36 +3,31 @@
 
 describe('BaseModelObserver', function () {
 
-    //var div;
+    var obs;
+    var model;
 
     beforeEach(function () {
-    	/*
-        div = document.createElement('div');
-        div.id = 'container';
-        document.body.appendChild(div);
-        */
+    	obs = BaseModelObserver();
+        var obj = {foo: {bar: 1}};
+        model = obs.createModel(obj);
     });
 
     afterEach(function () {
-    	/*
-        div.parentElement.removeChild(div);
-        */
+    	obs = null;
+        delete obs;
+        model = null;
+        delete model;
     });
 
-    it('Test 1', function () {
-    	/*
-        write();
-        var el = div.querySelector('h2');
-        assert(el, 'el exists');
-        */
+    it('Foo bar get 1', function () {
+        expect(model.foo.bar).toBe(1);
     });
 
-    it('Test 2', function () {
-    	/*
-        write();
-        var el = div.querySelector('h2');
-        assert(el.textContent === text, 'el text is ' + text);
-        */
+    it('Foo bar set 2', function () {
+    	
+        model.foo.bar = 2;
+
+        expect(model.foo.bar).toBe(2);
     });
 
 });

@@ -2,7 +2,7 @@
  * Created by marko on 24.5.15.
  */
 
-function ModelObserverHandlers(observer) {
+function ModelObserverHandlers() {
 
     if (!Date.now) {
         Date.now = function() { return new Date().getTime(); }

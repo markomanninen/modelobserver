@@ -39,11 +39,9 @@
 
             // initialize observer and handler
 
-            console.log(BaseModelObserver);
-
             var obs = BaseModelObserver();
             
-            var moh = ModelObserverHandlers(obs);
+            var moh = ModelObserverHandlers();
 
             obs.handler.define(moh.valueHandler);
 
