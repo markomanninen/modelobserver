@@ -1,0 +1,33 @@
+{
+  "name": "modelobserver",
+  "version": "0.0.1",
+  "homepage": "https://github.com/markomanninen/modelobserver",
+  "authors": [
+    "Marko Manninen <mmstud@gmail.com>"
+  ],
+  "description": "Model observer with init, set and get handlers",
+  "main": "dist/modelobserver.js",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "js",
+    "javacript",
+    "object",
+    "model",
+    "observe",
+    "binding",
+    "n way binding"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "console-log-div": "~0.6.1"
+  }
+}

@@ -5,9 +5,7 @@
         
         <title>Model Observer</title>
 
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/interface.min.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
 
         <style>
             #console-log-div {
@@ -35,12 +33,13 @@
     </head>
     <body>
 
-        <script src="bower_components/console-log-div/console-log-div.js"></script>
+        <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
 
         <script id="log">
 
-
             // initialize observer and handler
+
+            console.log(BaseModelObserver);
 
             var obs = BaseModelObserver();
             
