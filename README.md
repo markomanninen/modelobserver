@@ -69,3 +69,7 @@ Jasmine: http://jasmine.github.io
 Travis CI: https://travis-ci.org
 
 Semantic versioning: http://www.sitepoint.com/semantic-versioning-why-you-should-using/
+
+## LICENCE
+
+The MIT License (MIT)

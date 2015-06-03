@@ -1,3 +1,5 @@
+"use strict";
+
 function ModelFormHandlers(selector_name) {
 
 	var selector_name = selector_name || 'data-bind';
@@ -234,4 +236,12 @@ function ModelFormHandlers(selector_name) {
     };
 
     return {formHandler: formbinder.handler};
+}
+
+// for node environment require call
+if( typeof module !== 'undefined' ) {
+    if ( typeof module.exports === 'undefined' ) {
+        module.exports = {}
+    }
+    exports.ModelFormHandlers = ModelFormHandlers
 }

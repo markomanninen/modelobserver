@@ -1,5 +1,9 @@
-//var mo = require('../dist/modelobserver.min.js');
 //var assert = require('assert');
+
+// check if we run on browser of node environment
+if( typeof BaseModelObserver === 'undefined' ) {
+  var BaseModelObserver = require('../dist/modelobserver.min.js').BaseModelObserver;
+}
 
 describe('BaseModelObserver', function () {
 

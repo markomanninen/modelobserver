@@ -11,3 +11,10 @@ gulp.task('uglify', function() {
     }))
     .pipe(gulp.dest('./dist'))
 });
+
+var jasmine = require('gulp-jasmine');
+ 
+gulp.task('test', function () {
+    return gulp.src(['test/modelobserver.spec.js'])
+          .pipe(jasmine());
+});

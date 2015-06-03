@@ -1,6 +1,4 @@
-/**
- * Created by marko on 24.5.15.
- */
+"use strict";
 
 function ModelObserverHandlers() {
 
@@ -179,4 +177,12 @@ function ModelObserverHandlers() {
     };
 
     return {valueHandler: valueHandler};
+}
+
+// for node environment require call
+if( typeof module !== 'undefined' ) {
+    if ( typeof module.exports === 'undefined' ) {
+        module.exports = {}
+    }
+    module.exports.ModelObserverHandlers = ModelObserverHandlers
 }

@@ -7,10 +7,9 @@
   "license": "MIT",
   "devDependencies": {
     "gulp": "^3.9.0",
+    "gulp-jasmine": "^2.0.1",
     "gulp-uglifyjs": "^0.6.2",
     "jasmine-core": "^2.3.4",
-    "karma-chrome-launcher": "^0.1.12",
-    "karma-jasmine": "^0.3.5",
     "opener": "^1.4.0",
     "rimraf": "^2.2.8",
     "parallelshell": "^1.0.0"
@@ -20,9 +19,7 @@
     "prebuild": "npm run clean -s",
     "build": "gulp uglify",
     "open:test": "opener http://localhost:8888/gits/modelobserver/test/SpecRunner.html",
-    "test:single": "karma start karma.conf.js --log-level debug --single-run",
-    "test:run": "karma start karma.conf.js --log-level debug",
-    "test": "npm run test:single",
-    "tests": "parallelshell \"npm run test:run\" \"npm run open:test\""
+    "test:open": "parallelshell \"npm run test\" \"npm run open:test\"",
+    "test": "gulp test"
   }
 }
