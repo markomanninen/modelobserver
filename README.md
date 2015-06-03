@@ -1,5 +1,7 @@
 # Model Observer (Alpha state)
 
+[![Build Status](https://travis-ci.org/markomanninen/modelobserver.svg?branch=master)](https://travis-ci.org/markomanninen/modelobserver)
+
 ## Install
 
 	bower install modelobserver
