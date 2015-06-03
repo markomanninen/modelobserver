@@ -6,9 +6,11 @@
 
 ## Usage
 
+```html
+<script type="text/javascript" src="./dist/modelobserver.min.js"></script>
 ```
 
-<script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+```js
 
 var obs = BaseModelObserver();
 
@@ -37,6 +39,7 @@ var model = obs.createModel(obj);
 
 model.foo.bar = 2;
 
+
 ```
 
 ## Test
@@ -51,11 +54,18 @@ First edit package.json open:test part to contain your server path to test suite
 
 which creates a new minified version of the library to the dist directory.
 
-## Developer notes
+## Developer tools&notes
 
 Bower: http://bower.io
+
 NPM: https://www.npmjs.com
+
+Gulp: http://gulpjs.com
+
 Karma: http://karma-runner.github.io/0.12/index.html
+
 Jasmine: http://jasmine.github.io
+
 Travis CI: https://travis-ci.org
+
 Semantic versioning: http://www.sitepoint.com/semantic-versioning-why-you-should-using/
