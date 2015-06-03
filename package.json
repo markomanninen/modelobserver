@@ -9,9 +9,9 @@
     "gulp": "^3.9.0",
     "gulp-uglifyjs": "^0.6.2",
     "jasmine-core": "^2.3.4",
+    "chromedriver": "latest",
     "karma-chrome-launcher": "^0.1.12",
     "karma-jasmine": "^0.3.5",
-    "mocha": "^2.0.1",
     "opener": "^1.4.0",
     "rimraf": "^2.2.8",
     "parallelshell": "^1.0.0"

@@ -35,13 +35,26 @@
 
         <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
 
+        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
         <script id="log">
 
-            // initialize observer and handler
 
-            var obs = BaseModelObserver();
-            
-            var moh = ModelObserverHandlers();
+
+        var obs = BaseModelObserver();
+        var moh = ModelObserverHandlers();
+        var mfh = ModelFormHandlers();
+
+        $(document).ready(function() {
+
+            //op1();
+            //op2();
+            op3();
+
+        });
+
+        function op1() {
+            // initialize observer and handler
 
             obs.handler.define(moh.valueHandler);
 
@@ -88,6 +101,10 @@
             console.log("Just a logger:");
             console.log("");
 
+        }
+
+        function op2() {
+
             //var obs = BaseModelObserver();
 
             var logger = {
@@ -115,7 +132,39 @@
 
             console.log(model);
 
+        }
+
+        function op3() {
+
+            var obs = BaseModelObserver();
+            var moh = ModelObserverHandlers();
+            var mfh = ModelFormHandlers();
+
+            obs.handler.define(moh.valueHandler);
+            obs.handler.define(mfh.formHandler);
+
+            console.log("");
+            console.log("Form binder:");
+            console.log("");
+
+            //var obj = {foo: {bar: 1, bar2: function() {return this.bar}}};
+            var obj = {foo: {bar: 1, bar2: 2}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bar = 2;
+
+            $('[data-bind="root.foo.bar"]').val(3).trigger('change');
+            $('[data-bind="root.foo.bar"]').text(3).trigger('change');
+
+            return model;
+        }
+
         </script>
+
+        <p>
+        <label>Foo Bar: <span data-type="integer" data-bind="root.foo.bar2"></span></label> <input type="number" data-type="integer" data-bind="root.foo.bar" name="root[foo][bar]" value="" />
+        </p>
 
     </body>
 </html>

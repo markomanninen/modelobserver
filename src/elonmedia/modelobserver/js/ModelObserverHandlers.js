@@ -140,6 +140,9 @@ function ModelObserverHandlers() {
             // path
             model[property]['path'] = property_stack;
             defineProperty(model[property], 'path');
+            // old value
+            model[property]['old_value'] = value;
+            defineProperty(model[property], 'old_value');
             // access properties
             setHierarchyDownProperty(model[property], 'canget', model[property]['canget']);
             setHierarchyDownProperty(model[property], 'canset', model[property]['canset']);
@@ -169,6 +172,7 @@ function ModelObserverHandlers() {
         setter: function (value, old_value, property_stack) {
             // console.log(this) -> cyclic object, but available!
             //console.log(["value set", value, old_value, property_stack.join('.')]);
+            old_value.old_value = old_value.value;
             old_value.value = value;
             return old_value;
         }

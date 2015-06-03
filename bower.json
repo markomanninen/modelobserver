@@ -6,7 +6,7 @@
     "Marko Manninen <mmstud@gmail.com>"
   ],
   "description": "Model observer with init, set and get handlers",
-  "main": "dist/modelobserver.js",
+  "main": "dist/modelobserver.min.js",
   "moduleType": [
     "amd"
   ],
@@ -24,10 +24,12 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests"
+    "test"
   ],
   "devDependencies": {
     "console-log-div": "~0.6.1"
+  },
+  "dependencies": {
+    "jquery": "~2.1.4"
   }
 }
