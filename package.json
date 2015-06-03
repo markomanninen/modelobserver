@@ -23,6 +23,7 @@
     "open:test": "opener http://localhost:8888/gits/modelobserver/test/SpecRunner.html",
     "test:single": "karma start karma.conf.js --log-level debug --single-run",
     "test:run": "karma start karma.conf.js --log-level debug",
-    "test": "parallelshell \"npm run test:run\" \"npm run open:test\""
+    "test": "npm run test:single",
+    "tests": "parallelshell \"npm run test:run\" \"npm run open:test\""
   }
 }

@@ -46,7 +46,7 @@ model.foo.bar = 2;
 
 First edit package.json open:test part to contain your server path to test suite. Then run:
 
-	npm run test
+	npm run tests
 
 ## Build from sources (./src/elonmedia/modelobserver)
 
