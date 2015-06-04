@@ -124,7 +124,6 @@ function ModelObserverHandlers(observer) {
                 defineProperty(model[property], 'branch');
 
                 if (isArray(value)) {
-                    console.log(property, value);
                     model[property]['push'] = function(value) {
                         var o = {};
                         o[this.parent[property].length] = value;
