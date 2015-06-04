@@ -71,6 +71,7 @@ function ModelObserverHandlers(observer) {
                     props.push(property);
                     if (this.hasOwnProperty(property)) {
                         this[property].value = new_value[property];
+                        this[property].updated = getTimestamp();
                     } else {
                         if (typeof new_value[property] == 'object') {
                             var m = observer.createModel(new_value[property], props.slice(0, -1), this, property);
@@ -78,8 +79,8 @@ function ModelObserverHandlers(observer) {
                         } else {
                             observer.define(new_value[property], this, property, props.slice(), this);
                         }
+                        this.updated = getTimestamp();
                     }
-                    this[property].updated = getTimestamp();
                     props.pop();
                 }
             }
