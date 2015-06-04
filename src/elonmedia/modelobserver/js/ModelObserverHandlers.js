@@ -10,8 +10,13 @@ function ModelObserverHandlers(observer) {
         Date.now = function() { return new Date().getTime(); }
     }
 
-    function getTimestamp() {
-        return Date.now(); // Date.now() / 1000 | 0;
+    // http://apiux.com/2013/09/11/api-timezones/
+    function getTimestamp(iso) {
+        if (typeof iso == "undefined") {
+            return Date.now();
+        }
+        return new Date().toISOString();
+        //return Date.now(); // Date.now() / 1000 | 0;
     }
 
     function mergeConfig(to, from) {
