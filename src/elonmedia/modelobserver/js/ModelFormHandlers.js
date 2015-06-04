@@ -1,6 +1,6 @@
 "use strict";
 
-function ModelFormHandlers(selector_name) {
+function ModelFormHandlers(observer, selector_name) {
 
 	var selector_name = selector_name || 'data-bind';
 
@@ -87,6 +87,8 @@ function ModelFormHandlers(selector_name) {
         return '['+selector_name+'="'+properties.join('.')+'"]';
     };
 
+
+
     formbinder.initter = function(model, property, old_value, domElem) {
         if (domElem.length) {
         	if (domElem.prop("value") !== undefined) {
@@ -148,7 +150,6 @@ function ModelFormHandlers(selector_name) {
     };
 
     formbinder.setter = function(value, domElem) {
-        //log(["set", domElem]);
         // type is either radio or checkbox
         if (domElem.length > 1) {
             $.each(domElem, function(key, element) {
@@ -163,7 +164,6 @@ function ModelFormHandlers(selector_name) {
 					  $(this).val(value);
 					else
 					  $(this).text(value);
-
                 }
             });
         } else if (domElem.length) {
@@ -185,7 +185,6 @@ function ModelFormHandlers(selector_name) {
     };
 
     formbinder.getter = function(old_value, domElem) {
-        //log(["get", domElem]);
         // checkbox and radiobuttons have same data-bind names
         // so we need to get their values with a special case
         // checkbox and multiselect with multiple values
@@ -206,10 +205,12 @@ function ModelFormHandlers(selector_name) {
             if (domElem[0].type == 'checkbox') {
                 return domElem[0].checked;
             } else {
-            	if (domElem.prop("value") !== undefined)
+            	if (domElem.prop("value") !== undefined) {
 				  return parseValue(domElem.val(), domElem);
-				else
+                }
+				else {
 				  return parseValue(domElem.text(), domElem);
+                }
             }
         }
     };
@@ -218,16 +219,18 @@ function ModelFormHandlers(selector_name) {
 
     formbinder.handler = {
         initter: function(value, model, property, property_stack, parent) {
-            console.log(["init", value.value, model, property, property_stack.join('.'), parent]);
+            //console.log(["init", value.value, model, property, property_stack.join('.'), parent]);
             formbinder.initter(model, property, value.value, $(formbinder.selector(property_stack)));
             return value;
         },
         getter: function(value, property_stack) {
+            // console.log(this) -> cyclic object, but available!
             //console.log(["getter", value.value, property_stack.join('.')]);
             value.value = formbinder.getter(value.value, $(formbinder.selector(property_stack)));
             return value;
         },
         setter: function(value, old_value, property_stack) {
+            // console.log(this) -> cyclic object, but available!
             console.log(["setter", value.value, old_value.old_value, property_stack.join('.')]);
             formbinder.setter(value.value, $(formbinder.selector(property_stack)));
             formbinder.callback();

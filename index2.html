@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        
+        <meta charset="utf-8" />
+        
+        <title>Model Observer</title>
+<!--
+        <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+-->
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+
+        <style>
+            #console-log-div {
+              border: 1px solid gray;
+              padding: 10px 10px;
+              border-radius: 5px;
+              width: 95% !important;
+              background-color: #333;
+              color: yellow;
+            }
+            #console-log-text {
+                margin-top: -5px;
+                margin-bottom: 5px;
+            }
+            #console-log-div legend {
+                color: black;
+                position: relative;
+                top: -15px;
+                left: -10px;
+                font-size: 16px;
+                text-transform: capitalize;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
+
+        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
+        <script id="log">
+
+        var obs = BaseModelObserver();
+        var moh = ModelObserverHandlers(obs);
+
+        $(document).ready(function() {
+            op4();
+        });
+
+        function op4() {
+
+            obs.handler.define(moh.valueHandler);
+
+            var obj = {foo: {bars: [1,2]}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bars.push(3);
+            console.log(model.foo.bars.value);
+
+            model.foo.bars = {3:4};
+            console.log(model.foo.bars.value);
+
+            
+            obj.foo.bars = null;
+            console.log(model.foo.bars.value);
+
+            delete obj.foo.bars;
+            try {
+				console.log(model.foo.bars.value);
+            } catch (e) {
+            	console.log(e.toString());
+            }
+            
+
+            var obj = {
+            	foo: {
+            		bar: 1, 
+            		bar2: function() {
+            			return this.parent.bar.value;
+            		}
+            	}
+            };
+
+            var model = obs.createModel(obj);
+            console.log(model.foo.bar.value);
+
+            model.foo.bar = 2;
+            console.log(model.foo.bar2.value());
+            
+        }
+
+        </script>
+
+
+    </body>
+</html>

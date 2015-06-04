@@ -49,7 +49,7 @@ function BaseModelObserver() {
      * Copyright 2010, Rob Blakemore
      * http://wiki.github.com/rdblakemore/JavaScript-Interface/
      */
-    var Interface=function(i){i=i||null;var c=function(k){return typeof k==="undefined"},d=function(k){return typeof k!=="function"},g=function(l,k){if(d(l)){throw new Error('"signature" parameter should be of type "function"')}if(d(k)){throw new Error('"implementation" parameter should be of type "function"')}return l.length!==k.length},f,e,h;switch(true){case i===null:throw new Error("No arguments supplied to an instance of Interface constructor.");case c(i.type):throw new Error("Interface.type not defined.");case c(i.implementation):throw new Error("The interface ".concat(i.type).concat(" has not been implemented."))}f=i.type,e=i.implementation,h={};for(var j in i){var b=i[j];if(!d(b)){h[j]=b}}for(var b in h){if(c(e[b])){throw new Error(f.concat(".").concat(b).concat(" has not been implemented."))}for(var j in e){var a=e[j];switch(true){case c(h[j]):throw new Error(j.concat(" is not a defined member of ").concat(f).concat("."));case d(a):throw new Error(f.concat(".").concat(j).concat(" has not been implemented as a function."));case g(h[j],a):throw new Error("An implementation of ".concat(f).concat(".").concat(j).concat(" does not have the correct number of arguments."));default:h[j]=a;break}}}return h};
+    var Interface = function(i){i=i||null;var c=function(k){return typeof k==="undefined"},d=function(k){return typeof k!=="function"},g=function(l,k){if(d(l)){throw new Error('"signature" parameter should be of type "function"')}if(d(k)){throw new Error('"implementation" parameter should be of type "function"')}return l.length!==k.length},f,e,h;switch(true){case i===null:throw new Error("No arguments supplied to an instance of Interface constructor.");case c(i.type):throw new Error("Interface.type not defined.");case c(i.implementation):throw new Error("The interface ".concat(i.type).concat(" has not been implemented."))}f=i.type,e=i.implementation,h={};for(var j in i){var b=i[j];if(!d(b)){h[j]=b}}for(var b in h){if(c(e[b])){throw new Error(f.concat(".").concat(b).concat(" has not been implemented."))}for(var j in e){var a=e[j];switch(true){case c(h[j]):throw new Error(j.concat(" is not a defined member of ").concat(f).concat("."));case d(a):throw new Error(f.concat(".").concat(j).concat(" has not been implemented as a function."));case g(h[j],a):throw new Error("An implementation of ".concat(f).concat(".").concat(j).concat(" does not have the correct number of arguments."));default:h[j]=a;break}}}return h};
 
     function isObject(item) {
         return item && item.constructor.name == 'Object';
@@ -57,11 +57,11 @@ function BaseModelObserver() {
 
     var interfaceFactory = {
         interfaces: {},
-        create: function(name, interface) {
-            this.interfaces[name] = interface;
+        create: function(name, _interface) {
+            this.interfaces[name] = _interface;
         },
-        implement: function(name, implementation) {
-            this.interfaces[name]['implementation'] = implementation;
+        implement: function(name, _implementation) {
+            this.interfaces[name]['implementation'] = _implementation;
             this.interfaces[name]['type'] = name;
             return new Interface(this.interfaces[name]);
         }
@@ -112,47 +112,46 @@ function BaseModelObserver() {
 
     observer.handler = new observer.handlerApi();
 
-    observer.createModel = function(model, properties, parent) {
-
+    observer.createModel = function(model, properties, parent, root_name) {
         // create temporary root for model
-        var root_name = root_name ||'root';
-
-        // recursive model iterator
-        function rec(obj, properties, parent) {
-            var properties = properties || [];
-            for (var property in obj) {
-                properties.push(property);
-                def(obj[property], obj, property, properties.slice(), parent);
-                if (typeof obj[property] === "object")
-                    rec(obj[property], properties, obj);
-                properties.pop();
-            }
-            return obj;
-        }
-
-        // define branch and node
-        function def(value, model, property, property_stack, parent) {
-            // define initters for model
-            value = observer.handler.runHandler('initter', [value, model, property, property_stack, parent]);
-            Object.defineProperty(model, property, {
-                configurable: true,
-                // define getters for model
-                get: function () {
-                    return observer.handler.runHandler.bind(this)('getter', [value, property_stack]);
-                },
-                // define setters for model
-                set: function (new_value) {
-                    value = observer.handler.runHandler.bind(this)('setter', [new_value, value, property_stack]);
-                }
-            });
-        }
+        var root_name = root_name || 'root';
         // temporary root handler
         var root = {};
         root[root_name] = model;
-        var mod = rec(root, properties, parent);
-        //delete mod[root_name];
+        var mod = observer.rec(root, properties, parent);
         return mod[root_name];
     };
+
+    // recursive model iterator
+    observer.rec = function(obj, properties, parent) {
+        var properties = properties || [];
+        for (var property in obj) {
+            properties.push(property);
+            observer.define(obj[property], obj, property, properties.slice(), parent);
+            if (typeof obj[property] === "object")
+                observer.rec(obj[property], properties, obj);
+            properties.pop();
+        }
+        return obj;
+    }
+
+    // define branch and node
+    observer.define = function(value, model, property, property_stack, parent) {
+        // define initters for model
+        value = observer.handler.runHandler('initter', [value, model, property, property_stack, parent]);
+        Object.defineProperty(model, property, {
+            configurable: true,
+            // define getters for model
+            get: function () {
+                return observer.handler.runHandler.bind(this)('getter', [value, property_stack]);
+            },
+            // define setters for model
+            set: function (new_value) {
+                value = observer.handler.runHandler.bind(this)('setter', [new_value, value, property_stack]);
+            }
+        });
+    };
+
     return observer;
 }
 

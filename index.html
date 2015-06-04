@@ -5,8 +5,12 @@
         <meta charset="utf-8" />
         
         <title>Model Observer</title>
-
+<!--
         <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+-->
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
 
         <style>
             #console-log-div {
@@ -43,7 +47,7 @@
 
 
         var obs = BaseModelObserver();
-        var moh = ModelObserverHandlers();
+        var moh = ModelObserverHandlers(obs);
         var mfh = ModelFormHandlers();
 
         $(document).ready(function() {
@@ -138,8 +142,8 @@
         function op3() {
 
             var obs = BaseModelObserver();
-            var moh = ModelObserverHandlers();
-            var mfh = ModelFormHandlers();
+            var moh = ModelObserverHandlers(obs);
+            var mfh = ModelFormHandlers(obs);
 
             obs.handler.define(moh.valueHandler);
             obs.handler.define(mfh.formHandler);
@@ -148,15 +152,27 @@
             console.log("Form binder:");
             console.log("");
 
-            //var obj = {foo: {bar: 1, bar2: function() {return this.bar}}};
             var obj = {foo: {bar: 1, bar2: 2}};
+            var obj = {
+                foo: {
+                    bar: 1, 
+                    bar2: function() {
+                        return 2;
+                    }
+                }
+            };
 
             var model = obs.createModel(obj);
 
             model.foo.bar = 2;
+            //model.foo.bar2 = 3;
+
+            console.log(model.value);
 
             $('[data-bind="root.foo.bar"]').val(3).trigger('change');
-            $('[data-bind="root.foo.bar"]').text(3).trigger('change');
+            $('[data-bind="root.foo.bar2"]').text(3);
+
+            console.log(model.value);
 
             return model;
         }

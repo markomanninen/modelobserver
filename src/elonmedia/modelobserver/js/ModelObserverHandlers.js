@@ -1,6 +1,10 @@
 "use strict";
 
-function ModelObserverHandlers() {
+function ModelObserverHandlers(observer) {
+
+    function isArray(item) {
+        return item && item.constructor.name == 'Array'
+    }
 
     if (!Date.now) {
         Date.now = function() { return new Date().getTime(); }
@@ -57,19 +61,18 @@ function ModelObserverHandlers() {
         };
         config['set'] = function(new_value) {
             if (this.canset) {
-                //value = new_value
                 var props = this.path.slice();
                 for (var property in new_value) {
                     props.push(property);
                     if (this.hasOwnProperty(property)) {
                         this[property].value = new_value[property];
                     } else {
-                        // at the moment reating new properties on model is not supported
-                        // properties should be defined at the model creation time
-                        /*
-                        this[property] = observer.createModel(new_value[property], props.slice(), this);
-                        this[property].path.pop();
-                        */
+                        if (typeof new_value[property] == 'object') {
+                            var m = observer.createModel(new_value[property], props.slice(0, -1), this, property);
+                            this[property] = new_value[property];
+                        } else {
+                            observer.define(new_value[property], this, property, props.slice(), this);
+                        }
                     }
                     props.pop();
                 }
@@ -119,6 +122,17 @@ function ModelObserverHandlers() {
                 // branch / node property
                 model[property]['branch'] = true;
                 defineProperty(model[property], 'branch');
+
+                if (isArray(value)) {
+                    console.log(property, value);
+                    model[property]['push'] = function(value) {
+                        var o = {};
+                        o[this.parent[property].length] = value;
+                        this.parent[property] = o;
+                    }
+                    defineProperty(model[property], 'push');
+                }
+
             } else {
                 // value property with a new dictionary
                 model[property] = {value: value};
