@@ -231,7 +231,7 @@ function ModelFormHandlers(observer, selector_name) {
         },
         setter: function(value, old_value, property_stack) {
             // console.log(this) -> cyclic object, but available!
-            console.log(["setter", value.value, old_value.old_value, property_stack.join('.')]);
+            //console.log(["setter", value.value, old_value.old_value, property_stack.join('.')]);
             formbinder.setter(value.value, $(formbinder.selector(property_stack)));
             formbinder.callback();
             return value;

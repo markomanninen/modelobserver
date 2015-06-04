@@ -11,11 +11,11 @@ function ModelObserverHandlers(observer) {
     }
 
     // http://apiux.com/2013/09/11/api-timezones/
-    function getTimestamp(iso) {
-        if (typeof iso == "undefined") {
-            return Date.now();
+    function getTimestamp(iso8601) {
+        if (typeof iso8601 == "undefined" || iso8601 == true) {
+            return new Date().toISOString();
         }
-        return new Date().toISOString();
+        return Date.now();
         //return Date.now(); // Date.now() / 1000 | 0;
     }
 
