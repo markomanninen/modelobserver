@@ -1,6 +1,6 @@
 {
   "name": "modelobserver",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Test and dev handler for model observer",
   "main": "index.html",
   "author": "Marko Manninen <mmstud@gmail.com> (https://github.com/markomanninen/modelobserver)",
