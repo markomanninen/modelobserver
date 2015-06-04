@@ -79,6 +79,7 @@ function ModelObserverHandlers(observer) {
                             observer.define(new_value[property], this, property, props.slice(), this);
                         }
                     }
+                    this[property].updated = getTimestamp();
                     props.pop();
                 }
             }
