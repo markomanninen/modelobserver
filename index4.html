@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        
+        <meta charset="utf-8" />
+        
+        <title>Model Observer</title>
+<!--
+        <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+-->
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+
+        <style>
+            #console-log-div {
+              border: 1px solid gray;
+              padding: 10px 10px;
+              border-radius: 5px;
+              width: 95% !important;
+              background-color: #333;
+              color: yellow;
+            }
+            #console-log-text {
+                margin-top: -5px;
+                margin-bottom: 5px;
+            }
+            #console-log-div legend {
+                color: black;
+                position: relative;
+                top: -15px;
+                left: -10px;
+                font-size: 16px;
+                text-transform: capitalize;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
+
+        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
+        <script id="log">
+
+        var obs = BaseModelObserver();
+        var moh = ModelObserverHandlers(obs);
+
+        $(document).ready(function() {
+            //op6();
+            op7();
+            //op8();
+        });
+
+        function op6() {
+
+            obs.handler.define(moh.valueHandler);
+
+            var obj = {foo: []};
+
+            var model = obs.createModel(obj);
+
+            model.foo.push({bar: []});
+
+            model.foo[0].bar.push({});
+
+            //model.foo[0].bar[0] = {};
+            model.foo[0] = {};
+
+            delete model.foo[0].bar[0];
+            //delete model.foo[0];
+
+            console.log(model);
+
+        }
+
+        function op7() {
+
+            obs.handler.define(moh.valueHandler);
+
+            var obj = {foo: [{bar: [{a:1}, {b:1}, {c:1}]}]};
+            //var obj = {foo: [{bar: [{a:1}, {b:1}]}]};
+
+            var model = obs.createModel(obj);
+            
+            console.log(0);
+
+            model.foo[0].bar.push({d: 1});
+
+            console.log(model.foo[0].updated);
+            
+            console.log(1);
+
+            model.foo[0].bar.remove(1);
+            
+            console.log(2);
+            //model.foo[0].bar.remove();
+
+            //model.foo[0].bar.push({e: 1});
+            
+            console.log(model.foo[0].bar[2].updated);
+            console.log(model.foo[0].bar.updated);
+            console.log(model.foo[0].updated);
+            console.log(model.foo.updated);
+            console.log(model.updated);
+            console.log(model.foo[0].bar[1].c.path);
+            console.log(model.foo[0].bar[1].key);
+
+        }
+
+        function op8() {
+
+            obs.handler.define(moh.valueHandler);
+
+            var obj = {foo: [{bar: [{a:1}, {b:1}]}]};
+
+            var model = obs.createModel(obj);
+
+            model.foo[0].bar.push({c:1});
+/*
+            model.foo[0].bar.push({});
+            model.foo[0].bar[3] = model.foo[0].bar[2];
+            model.foo[0].bar[3].key = 3;
+            //model.foo[0].bar[2] = null; 
+            delete model.foo[0].bar[2]; 
+            model.foo[0].bar[2] = model.foo[0].bar[1];
+            model.foo[0].bar[2].key = 2;
+            //model.foo[0].bar[1] = null; 
+            delete model.foo[0].bar[1];
+            model.foo[0].bar[1] = model.foo[0].bar[0];
+            model.foo[0].bar[1].key = 1;
+            //model.foo[0].bar[0] = null; 
+            delete model.foo[0].bar[0]; 
+            model.foo[0].bar = {0: {x: 1}};
+*/
+			model.foo[0].bar.unshift({x: 1});
+
+            console.log(model.foo[0].bar.value);
+            console.log(model.foo[0].bar);
+
+        }
+
+        </script>
+
+
+    </body>
+</html>

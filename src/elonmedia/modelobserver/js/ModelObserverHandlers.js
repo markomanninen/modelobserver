@@ -20,17 +20,17 @@ function ModelObserverHandlers(observer) {
     }
 
     function mergeConfig(to, from) {
-        for (n in from)
+        for (var n in from)
             if (typeof to[n] != 'object')
                 to[n] = from[n];
             else if (typeof from[n] == 'object')
-                to[n] = realMerge(to[n], from[n]);
+                to[n] = mergeConfig(to[n], from[n]);
         return to;
     }
 
     function defineProperty(obj, property, config, get, set) {
         var value = obj[property];
-        var config = mergeConfig({enumerable: false, configurable: false}, config || {});
+        var config = mergeConfig({enumerable: false, configurable: true}, config || {});
         config['get'] = get || function() {return value};
         config['set'] = set || function(new_value) {value = new_value};
         Object.defineProperty(obj, property, config);
@@ -38,7 +38,7 @@ function ModelObserverHandlers(observer) {
 
     function defineNodeValueProperty(obj) {
         var value = obj['value'];
-        var config = {enumerable: false, configurable: false};
+        var config = {enumerable: false, configurable: true};
         config['get'] = function() {
             if (this.canget) return value;
             else return undefined;
@@ -54,7 +54,7 @@ function ModelObserverHandlers(observer) {
 
     function defineBranchValueProperty(obj) {
         var value = obj['value'];
-        var config = {enumerable: false, configurable: false};
+        var config = {enumerable: false, configurable: true};
         config['get'] = function() {
             var value = {};
             if (this.canget) {
@@ -76,6 +76,8 @@ function ModelObserverHandlers(observer) {
                         if (typeof new_value[property] == 'object') {
                             var m = observer.createModel(new_value[property], props.slice(0, -1), this, property);
                             this[property] = new_value[property];
+                            // on new key indexes parent needs to be reconfigured
+                            this[property].parent = this;
                         } else {
                             observer.define(new_value[property], this, property, props.slice(), this);
                         }
@@ -100,7 +102,7 @@ function ModelObserverHandlers(observer) {
                 }
             }
         };
-        defineProperty(obj, property, {}, get, set);
+        defineProperty(obj, property, {configurable: true}, get, set);
     }
 
     // created,...
@@ -116,7 +118,125 @@ function ModelObserverHandlers(observer) {
             value = new_value;
             if (this.parent) this.parent[property] = new_value;
         };
-        defineProperty(obj, property, null, get, set);
+        defineProperty(obj, property, {enumerable: false, configurable: true}, get, set);
+    }
+
+    // path,...
+    function setPathProperty(obj) {
+        //var value = obj['path'];
+        // instead of setting fixed and static path, dynamic retreaval
+        // based on parent keys are used here because keys may change
+        // on array push, remove, pop, shift and
+        var get = function() {
+            //return value;
+            if (this.parent)
+                return [this.key].concat(this.parent.path.reverse()).reverse();
+            else return [this.key];
+        };
+        defineProperty(obj, 'path', {configurable: true}, get);
+    }
+
+    // push... add item to the end of the array/list
+    function defineArrayPushProperty(obj, property) {
+        obj[property]['push'] = function(value) {
+            var o = {};
+            o[this.parent[property].length] = value;
+            this.parent[property] = o;
+        }
+        defineProperty(obj[property], 'push');
+    }
+
+    // unshift... add item to the beginning of the array/list
+    function defineArrayUnShiftProperty(obj, property) {
+        obj[property]['unshift'] = function(value) {
+
+            var m = this.parent[property];
+            var l = m.length;
+
+            m.push({});
+            m[l] = m[l-1];
+            m[l].key = l;
+            m[l].updated = getTimestamp();
+
+            do {
+                l -= 1;
+                delete m[l]; 
+                m[l] = m[l-1];
+                m[l].key = l;
+                m[l].updated = getTimestamp();
+            } while (l > 1);
+            
+            delete m[0];
+            // m = {0: value} will not work
+            this.parent[property] = {0: value};
+            
+        }
+        defineProperty(obj[property], 'unshift');
+    }
+
+    // pop... remove the last item
+    function defineArrayPopProperty(obj, property) {
+        obj[property]['pop'] = function() {
+            this.parent[property].remove(-1);
+        }
+        defineProperty(obj[property], 'pop');
+    }
+
+    // shift... remove the first item
+    function defineArrayShiftProperty(obj, property) {
+        obj[property]['shift'] = function() {
+            this.parent[property].remove(0);
+        }
+        defineProperty(obj[property], 'shift');
+    }
+
+    // splice... like javascript slice but without third parameter
+    function defineArrayRemoveProperty(obj, property) {
+        // index: where to start removing. negative number starts from the end
+        // of the list. howmany: how many items will be removed counting from the index.
+        // default 1.
+        obj[property]['remove'] = function(index, howmany) {
+            var m = this.parent[property];
+            var l = m.length-1;
+            // remove all
+            if (index == undefined) {
+                for (var i in m) {
+                    i = parseInt(i);
+                    delete m[i];
+                }
+                m.splice(0, l+1);
+            } else {
+                // remove howmany amount of items starting from index
+                if (index < 0) {
+                    index = index + l + 1;
+                }
+                if (index > -1 && index < l+1) {
+                    // default howmany is 1. 0 not possible
+                    if (howmany == undefined || howmany < 2) howmany = 1
+                    for (var i in m) {
+                        if (i >= index) {
+                            // array indexes are integers
+                            i = parseInt(i);
+                            delete m[i];
+                            if (i < l) {
+                                m[i] = m[i+1];
+                                m[i].key = i;
+                                m[i].updated = getTimestamp();
+                            }
+                        }
+                    }
+                    // remove null items
+                    m.splice(l, 1);
+                    // recursively remove rest of the items if needed
+                    howmany -= 1;
+                    if (howmany > 0) m.remove(index, howmany);
+                }
+            }
+            m.updated = getTimestamp();
+            // this dummy assignment triggers setter handler after removal of items
+            this.parent[property] = {};
+        }
+        defineProperty(obj[property], 'remove');
     }
 
     var valueHandler = {
@@ -129,16 +249,15 @@ function ModelObserverHandlers(observer) {
                 // branch / node property
                 model[property]['branch'] = true;
                 defineProperty(model[property], 'branch');
-
                 if (isArray(value)) {
-                    model[property]['push'] = function(value) {
-                        var o = {};
-                        o[this.parent[property].length] = value;
-                        this.parent[property] = o;
-                    }
-                    defineProperty(model[property], 'push');
+                    // special methods for arrays/lists
+                    // push, remove, pop, shift, unshift are supported
+                    defineArrayPushProperty(model, property);
+                    defineArrayRemoveProperty(model, property);
+                    defineArrayPopProperty(model, property);
+                    defineArrayShiftProperty(model, property);
+                    defineArrayUnShiftProperty(model, property);
                 }
-
             } else {
                 // value property with a new dictionary
                 model[property] = {value: value};
@@ -147,6 +266,13 @@ function ModelObserverHandlers(observer) {
                 model[property]['node'] = true;
                 defineProperty(model[property], 'node');
             }
+
+            // key
+            model[property]['key'] = property;
+            defineProperty(model[property], 'key');
+
+            // common configuration
+            var config = {enumerable: false, configurable: true};
             // parent property
             var parent_property, grand_parent;
             parent_property = property_stack.length > 1 ? property_stack[property_stack.length - 2] : null;
@@ -154,13 +280,13 @@ function ModelObserverHandlers(observer) {
                 grand_parent = parent[parent_property];
             }
             model[property]['parent'] = grand_parent;
-            defineProperty(model[property], 'parent');
+            defineProperty(model[property], 'parent', config);
             // path
             model[property]['path'] = property_stack;
-            defineProperty(model[property], 'path');
+            setPathProperty(model[property], 'path');
             // old value
             model[property]['old_value'] = value;
-            defineProperty(model[property], 'old_value');
+            defineProperty(model[property], 'old_value', config);
             // access properties
             setHierarchyDownProperty(model[property], 'canget', model[property]['canget']);
             setHierarchyDownProperty(model[property], 'canset', model[property]['canset']);
