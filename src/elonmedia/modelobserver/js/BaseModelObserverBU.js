@@ -162,6 +162,57 @@ function BaseModelObserver() {
         return this;
     };
 
+    /*
+    observer.handlerApi = function() {
+
+        var handler_key = 'handlers';
+
+        //var trigger_key_order = 'order';
+        var functions = {};
+        var binders = {};
+
+        // defines interface for handlers
+        interfaceFactory.create(handler_key, {
+            // this is called once in the model creation moment
+            initter: function(value, model, property, property_stack, parent){return value},
+            // this is called everytime model attribute is provoked
+            getter: function(value, property_stack){return value},
+            // this is called everytime model attribute is called
+            setter: function(value, old_value, property_stack){return value}
+        });
+
+        this.define = function(handlers) {
+            var handlerImplementations = interfaceFactory.implement(handler_key, handlers);
+            for (var name in handlers) {
+                if (handlers.hasOwnProperty(name)) {
+                    if (!functions.hasOwnProperty(name)) functions[name] = [];
+                    Object.defineProperty(binders, name, {
+                        get: function() {return functions[name]},
+                        set: function(val) {functions[name].push(val)},
+                        enumerable: true,
+                        configurable: true
+                    });
+                    binders[name] = handlerImplementations[name];
+                }
+            }
+        };
+
+        this.runHandler = function(name) {
+            for (var i in functions[name]) {
+                if (functions[name].hasOwnProperty(i)) {
+                    // modify the first argument of the callee arguments
+                    arguments[1][0] = functions[name][i].apply(this, arguments[1]);
+                }
+            }
+            // first parameter of handler is used as a return value.
+            return arguments[1][0];
+        };
+
+        return this;
+    };
+
+    observer.handler = new observer.handlerApi();
+    */
     observer.triggers = new observer.triggerApi();
 
     observer.createModel = function(model, properties, parent, root_name) {
@@ -236,7 +287,7 @@ function BaseModelObserver() {
                 value = observer.triggers.runTrigger.bind(this)('set', [new_value, value, property_stack]);
             }
         });
-/*
+
         // define key property for model
         model['key'] = property;
         Object.defineProperty(model, 'key', {value: property, enumerable: false, configurable: true});
@@ -246,81 +297,45 @@ function BaseModelObserver() {
             return parent ? parent.path().concat(parent.key) : [];
         };
         Object.defineProperty(model, 'path', {enumerable: false, configurable: true});
-*/
-        // define remover/deleter for model
-        model['remove'] = function(prop, howmany) {
-            var c;
-            if (prop != null && typeof prop != undefined) {
-                if (model.hasOwnProperty(prop)) {
-                    if (isArray(this)) {
-                        howmany = howmany || 1;
-                        // values for remove trigger
-                        var l1 = prop < 0 ? prop + this.length : prop;
-                        var l2 = l1+howmany+1;
-                        var val = this.slice().filter(function(v){return v > l1 && v < l2});
-                        this.splice.apply(this, arguments);
-                        c = observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
 
-                        // values for add trigger. splice already did it, if arguments were > 2
-                        if (arguments.length > 2) {
-                            var d = {};
-                            for (var i in arguments) if (parseInt(i) > l1) d[i] = arguments[i];
-                            // call add trigger
-                            observer.triggers.runTrigger.bind(this)('add', [d, model, property, property_stack, parent]);
-                        }
-                        //return val;
-                    } else {
-                        c = observer.triggers.runTrigger.bind(this)('remove', [value, model, property, property_stack, parent]);
-                        model[prop] = null;
-                        delete model[prop];
-                    }
+        // define remover/deleter for model
+        model['remove'] = function(prop) {
+            var c;
+            if (prop) { 
+                if (model.hasOwnProperty(prop)) {
+                    c = observer.triggers.runTrigger.bind(this)('remove', [value, model, property, property_stack, parent]);
+                    model[prop] = null;
+                    delete model[prop];
                 }
             } else {
-                if (isArray(this)) {
-                    c = [];
-                    c = c.concat(this);
-                    this.splice(0, this.length);
-                    /*
-                    model = [];
-                    property = null;
-                    */
-                } else {
-                    for (var i in this) {
-                        if (this.hasOwnProperty(i)) {
-                            if (isArray(this)) {
-                                c = c.concat(this[i]);
-                            } else {
-                                c = this[i];
-                                this[i] = null;
-                                delete this[i];
-                            }
-                        }
+                for (var i in this) {
+                    if (this.hasOwnProperty(i)) {
+                        observer.triggers.runTrigger.bind(this)('remove', [value, model, property, property_stack, parent]);
+                        c = this;
+                        this[property] = null;
+                        delete this[property];
                     }
                 }
-                observer.triggers.runTrigger.bind(this)('remove', [c, model, property, property_stack, parent]);
             }
             return c;
         }
         Object.defineProperty(model, 'remove', {enumerable: false, configurable: true});
-/*
-        // define isRoot, isBranch, isNode properties for model
+
+        // define isRoot, isBranch, is Node properties for model
         model['isRoot'] = property_stack.length == 2;
         Object.defineProperty(model, 'isRoot', {enumerable: false, configurable: true});
 
-        model['isBranch'] = isObject(value);
+        model['isBranch'] = isObject(value); //(value !== null && typeof value === "object");
         Object.defineProperty(model, 'isBranch', {enumerable: false, configurable: true});
 
         model['isNode'] = !model['isBranch'];
         Object.defineProperty(model, 'isNode', {enumerable: false, configurable: true});
-*/
+
         model['parent'] = parent;
         Object.defineProperty(model, 'parent', {enumerable: false, configurable: true});
 
-
         if (isArray(value)) {
-            /*
-            // special methods for arrays/lists
-            // push, remove, pop, shift, unshift are supported
+        	/*
             model['splice'] = function(index, howmany) {
                 // values for remove trigger
                 var l1 = index < 0 ? index + this[property].length : index;
@@ -340,43 +355,34 @@ function BaseModelObserver() {
             }
             Object.defineProperty(model, 'splice', {enumerable: false, configurable: true});
             */
-            // append and return length of the array
-            model[property]['append'] = function(val) {
-                observer.triggers.runTrigger.bind(this)('add', [val, model, this.length, property_stack, parent]);
-                console.log(observer.rec(val));
-                return this.push(val);
+            // special methods for arrays/lists
+            // push, remove, pop, shift, unshift are supported
+            model['push'] = function(val) {
+                observer.triggers.runTrigger.bind(this)('add', [val, model, property, property_stack, parent]);
+                return this[property].push(val);
             }
-            Object.defineProperty(model[property], 'append', {enumerable: false, configurable: true});
+            Object.defineProperty(model, 'push', {enumerable: false, configurable: true});
 
-            // prepend and return length of the array
-            model[property]['prepend'] = function(val) {
-                observer.triggers.runTrigger.bind(this)('add', [val, model, 0, property_stack, parent]);
-                return this.unshift(val);
-            }
-            Object.defineProperty(model[property], 'prepend', {enumerable: false, configurable: true});
-
-            model[property]['last'] = function() {
-                var val = this.pop();
+            model['pop'] = function() {
+                var val = this[property].pop();
                 observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
                 return val;
             }
-            Object.defineProperty(model[property], 'last', {enumerable: false, configurable: true});
+            Object.defineProperty(model, 'pop', {enumerable: false, configurable: true});
             
-            model[property]['first'] = function() {
-                var val = this.shift();
+            model['shift'] = function() {
+                var val = this[property].shift();
                 observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
                 return val;
             }
-            Object.defineProperty(model[property], 'first', {enumerable: false, configurable: true});
-            
-            model[property]['order'] = function(func) {
-                var args = {};
-                for (var i in arguments) if (i > 0) args[i] = arguments[i];
-                var val = func.apply(this, args);
-                observer.triggers.runTrigger.bind(this)('set', [val, model, property, property_stack, parent]);
-                return val;
+            Object.defineProperty(model, 'shift', {enumerable: false, configurable: true});
+
+            model['unshift'] = function(val) {
+                observer.triggers.runTrigger.bind(this)('add', [val, model, property, property_stack, parent]);
+                return this[property].unshift(val);
             }
-            Object.defineProperty(model[property], 'order', {enumerable: false, configurable: true});
+            Object.defineProperty(model, 'unshift', {enumerable: false, configurable: true});
+
 
         }
     };

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        
+        <meta charset="utf-8" />
+        
+        <title>Model Observer</title>
+<!--
+        <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+-->
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+<!--
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+-->
+        <style>
+            #console-log-div {
+              border: 1px solid gray;
+              padding: 10px 10px;
+              border-radius: 5px;
+              width: 95% !important;
+              background-color: #333;
+              color: yellow;
+            }
+            #console-log-text {
+                margin-top: -5px;
+                margin-bottom: 5px;
+            }
+            #console-log-div legend {
+                color: black;
+                position: relative;
+                top: -15px;
+                left: -10px;
+                font-size: 16px;
+                text-transform: capitalize;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
+
+        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
+        <script id="log">
+
+        var obs = BaseModelObserver();
+
+        var init = {
+    		'init': function(value, model, property, property_stack, parent) {
+    			console.log('init', value, model, property, property_stack, parent);
+    			return value;
+    		}
+    	}
+
+    	var get = {
+    		'get': function(value, property_stack) {
+    			console.log('get', value, property_stack);
+    			return value;
+    		}
+    	}
+
+    	var set = {
+    		'set': function(value, old_value, property_stack) {
+    			console.log('set', value, old_value, property_stack);
+    			return value;
+    		}
+    	}
+
+    	var remove = {
+    		'remove': function(value, model, property, property_stack, parent) {
+    			console.log('remove', value, model, property, property_stack, parent);
+    			return value;
+    		}
+    	}
+
+		var add = {
+    		'add': function(value, model, property, property_stack, parent) {
+    			console.log('add', value, model, property, property_stack, parent);
+    			return value;
+    		}
+    	}
+
+    	var on = {
+    		'init': init.init,
+    		'get': get.get,
+    		'set': set.set,
+    		'remove': remove.remove,
+    		'add': add.add,
+    	}
+
+        //obs.triggers.defines(on);
+
+        //obs.triggers.define('init', init);
+        //obs.triggers.define('get', get);
+        obs.triggers.define('set', set);
+        obs.triggers.define('remove', remove);
+        obs.triggers.define('add', add);
+
+        $(document).ready(function() {
+            //op1();
+            //op2();
+            //op3();
+            op4();
+        });
+
+        function op1() {
+
+            var obj = {foo: {bar: "baz", bars: [1, 2]}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bar = "BAZ"; // -> triggers set
+
+            //model.foo.bars.push(1); -> does not trigger!
+
+            model.foo.bars.shift(); // -> does not trigger
+
+            model.foo.bars.pop(); // -> does not trigger
+
+            model.foo.bars.unshift(1); // -> does not trigger
+
+            model.foo.bars = model.foo.bars.concat([2]); // -> triggers set
+
+            console.log(model); // -> triggers get for each model attribute 
+
+            // delete model.foo.bar; -> does not trigger
+
+            model.foo.bar = null; // -> triggers  set
+            delete model.foo.bar;
+
+            model.foo.bar = 1; // does not trigger as a new attribute, will not have observable properties...
+
+            model.foo.bar += 1; // does not trigger
+
+            model.foo.bar = model.foo.bar+1; // triggers set
+
+            console.log(model);
+
+            // all these shortcomings are a good reason to implement another layer
+            // on model observer library
+
+        }
+
+        function op2() {
+
+            var obj = {
+            	foo: {
+            		bar: function() {
+            			return "BAZ";
+            		}
+            	}, 
+            	foo2: function() {
+            		return this.bar2;
+            	}, 
+            	bar2: "baz2"
+           	};
+
+            var model = obs.createModel(obj);
+
+            console.log('get', model.foo.bar);
+
+            console.log('get', model.foo2);
+            model.bar2 = 'BAZ2';
+            console.log('get', model.foo2);
+
+
+            model.remove();
+
+            console.log(model);
+
+        }
+
+        function op3() {
+
+            var obj = {
+            	foo: {
+            		bar: {
+            			baz: 1
+            		}
+            	}
+           	};
+
+           	var model = obs.createModel(obj, null, null, 'model');
+
+           	console.log(model);
+
+            //var r = model.foo.remove('bar');
+
+            model.foo.bar.remove('baz');
+
+            //console.log(r, model);
+
+            console.log(model);
+
+        }
+
+        function op4() {
+
+            var obj = {
+            	foo: {
+            		bar: [1,2,3,4]
+            	}
+           	};
+
+           	var model = obs.createModel(obj, null, null, 'model');
+
+/*
+           	console.log(model);
+
+            //var r = model.foo.remove('bar');
+
+            // add 2 -> 1, 2
+            model.foo.push(2);
+            
+            console.log(model);
+
+            // remove last -> 1
+            model.foo.pop();
+
+            console.log(model);
+
+            // remove first -> none
+            model.foo.shift();
+
+            console.log(model);
+
+            // add to beginning -> 1, 2
+            model.foo.unshift(1, 2);
+
+            console.log(model);
+*/
+            // remove 2 from index 1 and add 3 and 4 -> 1, 2, 3, 4
+            //model.foo.splice(-3, 3, 2, 3, 4);
+            //model.foo.splice(-3, 3, 5, 6);
+
+            // but note that these functions are targetted on the sibling of the foo,
+            // not foo itself! which is not very clear in that sense, so these should
+            // be used on ModelObserverHandler class
+
+            //var r = model.foo.bar.remove(0, 1, 1);
+            //console.log(r);
+
+            var r = model.foo.bar.append(5);
+            console.log('append, result length', r);
+
+            var r = model.foo.bar.prepend(0);
+            console.log('prepend, result length:', r);
+/*
+            var r = model.foo.bar.first(0);
+            console.log(r);
+
+            var r = model.foo.bar.last(0);
+            console.log(r);
+
+            var r = model.foo.bar.order(Array.prototype.reverse);
+            console.log(r);
+
+            var r = model.foo.bar.order(Array.prototype.sort, function(a,b){return a-b;});
+            console.log(r);
+*/
+            console.log(model);
+
+        }
+
+        </script>
+
+
+    </body>
+</html>
