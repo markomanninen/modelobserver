@@ -63,7 +63,8 @@
 
     	var set = {
     		'set': function(value, old_value, property_stack) {
-    			console.log('set', value, old_value, property_stack);
+    			if (!this.arrayMutation)
+    				console.log('set', value, old_value, property_stack);
     			return value;
     		}
     	}
@@ -201,7 +202,8 @@
             var obj = {
             	foo: {
             		bar: [1,2,3,4]
-            	}
+            	},
+            	baz: 1
            	};
 
            	var model = obs.createModel(obj, null, null, 'model');
@@ -247,20 +249,26 @@
 
             var r = model.foo.bar.prepend(0);
             console.log('prepend, result length:', r);
+
+			model.baz = 2;
+			
+            //var r = model.foo.bar.first(0);
+            //console.log('first', r);
+            
+            //var r = model.foo.bar.last(0);
+            //console.log('last', r);
+            
+            //model.foo.bar = [1,2,3,4];
+                      
+            //model.foo.bar.push(5);
 /*
-            var r = model.foo.bar.first(0);
-            console.log(r);
-
-            var r = model.foo.bar.last(0);
-            console.log(r);
-
             var r = model.foo.bar.order(Array.prototype.reverse);
             console.log(r);
 
             var r = model.foo.bar.order(Array.prototype.sort, function(a,b){return a-b;});
             console.log(r);
 */
-            console.log(model);
+            console.log(model.foo.bar);
 
         }
 

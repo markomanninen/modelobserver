@@ -56,7 +56,7 @@ function BaseModelObserver() {
     }
 
     function isArray(item) {
-        return item && item.constructor.name == 'Array'
+        return item && item.constructor.name == 'Array';
     }
 
     var interfaceFactory = {
@@ -86,7 +86,7 @@ function BaseModelObserver() {
         this.create = function(name, func) {
             var d = {}; d[name] = func;
             interfaceFactory.create(name, d);
-        }
+        };
 
         /*
         this.create('init', function(value, model, property, property_stack, parent){return value});
@@ -97,27 +97,27 @@ function BaseModelObserver() {
         // defines interfaces for triggers
         interfaceFactory.create('init', {
             // this is called once in the model creation moment
-            'init': function(value, model, property, property_stack, parent){return value}
+            'init': function(value, model, property, property_stack, parent){return value;}
         });
 
         interfaceFactory.create('get', {
             // this is called everytime model attribute is provoked
-            'get': function(value, property_stack){return value}
+            'get': function(value, property_stack){return value;}
         });
 
         interfaceFactory.create('set', {
             // this is called everytime model attribute is set
-            'set': function(value, old_value, property_stack){return value}
+            'set': function(value, old_value, property_stack){return value;}
         });
 
         interfaceFactory.create('remove', {
             // this is called everytime model attribute is set
-            'remove': function(value, model, property, property_stack, parent){return value}
+            'remove': function(value, model, property, property_stack, parent){return value;}
         });
 
         interfaceFactory.create('add', {
             // this is called everytime model attribute is set
-            'add': function(value, model, property, property_stack, parent){return value}
+            'add': function(value, model, property, property_stack, parent){return value;}
         });
 
         this.defines = function(dict) {
@@ -125,7 +125,7 @@ function BaseModelObserver() {
                 var d = {}; d[i] = dict[i];
                 this.define(i, d);
             }
-        }
+        };
 
         // trigger keys: init, get, set, add, remove.
         this.define = function(trigger_key, trigger) {
@@ -134,8 +134,8 @@ function BaseModelObserver() {
                 if (trigger.hasOwnProperty(name)) {
                     if (!functions.hasOwnProperty(name)) functions[name] = [];
                     Object.defineProperty(binders, name, {
-                        get: function() {return functions[name]},
-                        set: function(val) {functions[name].push(val)},
+                        get: function() {return functions[name];},
+                        set: function(val) {functions[name].push(val);},
                         enumerable: true,
                         configurable: true
                     });
@@ -185,7 +185,7 @@ function BaseModelObserver() {
             properties.pop();
         }
         return obj;
-    }
+    };
 
     /*
     // define branch and node
@@ -233,6 +233,14 @@ function BaseModelObserver() {
             },
             // define setters for model
             set: function (new_value) {
+            	/*
+            	if (this.arrayMutation) {
+            		new_value = observer.createModel([new_value], this.path, model);
+            	}
+            	model.parent[property] = new_value;
+            	console.log(1, new_value, this.arrayMutation);
+            	*/
+            	//new_value = observer.rec(new_value, this.path, model);
                 value = observer.triggers.runTrigger.bind(this)('set', [new_value, value, property_stack]);
             }
         });
@@ -257,10 +265,9 @@ function BaseModelObserver() {
                         // values for remove trigger
                         var l1 = prop < 0 ? prop + this.length : prop;
                         var l2 = l1+howmany+1;
-                        var val = this.slice().filter(function(v){return v > l1 && v < l2});
+                        var val = this.slice().filter(function(v){return v > l1 && v < l2;});
                         this.splice.apply(this, arguments);
                         c = observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
-
                         // values for add trigger. splice already did it, if arguments were > 2
                         if (arguments.length > 2) {
                             var d = {};
@@ -280,29 +287,22 @@ function BaseModelObserver() {
                     c = [];
                     c = c.concat(this);
                     this.splice(0, this.length);
-                    /*
-                    model = [];
-                    property = null;
-                    */
                 } else {
                     for (var i in this) {
                         if (this.hasOwnProperty(i)) {
-                            if (isArray(this)) {
-                                c = c.concat(this[i]);
-                            } else {
-                                c = this[i];
-                                this[i] = null;
-                                delete this[i];
-                            }
+                            c = this[i];
+                            this[i] = null;
+                            delete this[i];
                         }
                     }
                 }
                 observer.triggers.runTrigger.bind(this)('remove', [c, model, property, property_stack, parent]);
             }
             return c;
-        }
+        };
+        
         Object.defineProperty(model, 'remove', {enumerable: false, configurable: true});
-/*
+
         // define isRoot, isBranch, isNode properties for model
         model['isRoot'] = property_stack.length == 2;
         Object.defineProperty(model, 'isRoot', {enumerable: false, configurable: true});
@@ -312,12 +312,16 @@ function BaseModelObserver() {
 
         model['isNode'] = !model['isBranch'];
         Object.defineProperty(model, 'isNode', {enumerable: false, configurable: true});
-*/
+
         model['parent'] = parent;
         Object.defineProperty(model, 'parent', {enumerable: false, configurable: true});
 
 
         if (isArray(value)) {
+        	// especially for set trigger, which is lanched by splice, shift and unshift functions.
+        	model[property]['arrayMutation'] = true;
+        	Object.defineProperty(model[property], 'arrayMutation', {enumerable: false, configurable: true});
+        
             /*
             // special methods for arrays/lists
             // push, remove, pop, shift, unshift are supported
@@ -343,39 +347,38 @@ function BaseModelObserver() {
             // append and return length of the array
             model[property]['append'] = function(val) {
                 observer.triggers.runTrigger.bind(this)('add', [val, model, this.length, property_stack, parent]);
-                console.log(observer.rec(val));
                 return this.push(val);
-            }
+            };
             Object.defineProperty(model[property], 'append', {enumerable: false, configurable: true});
 
             // prepend and return length of the array
             model[property]['prepend'] = function(val) {
-                observer.triggers.runTrigger.bind(this)('add', [val, model, 0, property_stack, parent]);
+                observer.triggers.runTrigger.bind(this)('add', [val, model, property, property_stack, parent]);
                 return this.unshift(val);
-            }
+            };
             Object.defineProperty(model[property], 'prepend', {enumerable: false, configurable: true});
 
             model[property]['last'] = function() {
                 var val = this.pop();
-                observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
+                observer.triggers.runTrigger.bind(this)('remove', [val, model, this.length, property_stack, parent]);
                 return val;
-            }
+            };
             Object.defineProperty(model[property], 'last', {enumerable: false, configurable: true});
             
             model[property]['first'] = function() {
                 var val = this.shift();
-                observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
+                observer.triggers.runTrigger.bind(this)('remove', [val, model, 0, property_stack, parent]);
                 return val;
-            }
+            };
             Object.defineProperty(model[property], 'first', {enumerable: false, configurable: true});
             
             model[property]['order'] = function(func) {
                 var args = {};
                 for (var i in arguments) if (i > 0) args[i] = arguments[i];
                 var val = func.apply(this, args);
-                observer.triggers.runTrigger.bind(this)('set', [val, model, property, property_stack, parent]);
+                observer.triggers.runTrigger.bind(this)('set', [val, model, 0, property_stack, parent]);
                 return val;
-            }
+            };
             Object.defineProperty(model[property], 'order', {enumerable: false, configurable: true});
 
         }
@@ -387,7 +390,7 @@ function BaseModelObserver() {
 // for node environment require call
 if( typeof module !== 'undefined' ) {
     if ( typeof module.exports === 'undefined' ) {
-        module.exports = {}
+        module.exports = {};
     }
-    exports.BaseModelObserver = BaseModelObserver
+    exports.BaseModelObserver = BaseModelObserver;
 }
