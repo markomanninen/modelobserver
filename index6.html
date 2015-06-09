@@ -65,7 +65,9 @@
 
     	var set = {
     		'set': function(value, old_value, property_stack) {
-    			if (!old_value.arrayMutation)
+    			// maybe you dont' want to track array mutations
+    			// because it is triggered on every array change
+    			if (!old_value.arrayMutation && (!old_value.parent || !old_value.parent.arrayMutation))
     				console.log('set', value, old_value, property_stack);
     			return value;
     		}
@@ -73,7 +75,13 @@
 
     	var remove = {
     		'remove': function(value, model, property, property_stack, parent) {
-    			console.log('remove', value, model, property, property_stack, parent);
+    			console.log('remove', 
+    						value.map(function(v){return v.value;}), // what was removed
+    						typeof property != "undefined" ? property : "undefined", // index of the removal operation
+    						model.value, // what is left after removal
+    						this.path.join('.') // path of the removal operation
+    			);
+    			// must return value for further processing
     			return value;
     		}
     	}
@@ -106,29 +114,30 @@
         //obs.triggers.define('add', add);
 
         $(document).ready(function() {
-            //op1();
-            op2();
+            op1();
+            //op2();
+            //op3();
         });
 
         function op1() {
 
-            var obj = {foo: {bar: "baz", bars: [1]}};
+            var obj = {foo: {bar: "baz", bars: [0]}};
 
             var model = obs.createModel(obj);
 
-            model.foo.bar = "BAZ";
+            //model.foo.bar = "BAZ";
 
-            model.foo = {bar2: "baz2"};
+            //model.foo = {bar2: "baz2"};
 
-            model.foo.bars.push(2);
+            model.foo.bars.push(1,2,3);
 
             model.foo.bars.shift();
 
-            model.foo.bars.unshift(1);
+            model.foo.bars.unshift(0);
 
             model.foo.bars.pop();
 
-            console.log(model.foo.bars);
+            console.log(model.foo.value);
 
         }
 
@@ -141,6 +150,42 @@
             model.foo.bars.unshift(0);
 
             console.log(model.foo.bars);
+
+        }
+
+        function op3() {
+
+            var obj = {foo: {bar: "baz", bars: [1,2,3,4]}, c: {a:0, b:1}};
+
+            var model = obs.createModel(obj);
+/*
+            // remove all under bars, but not bars
+            model.foo.bars.remove();
+
+            console.log(model.foo);
+
+            model.foo.bars.push(1,2,3,4);
+*/
+            // remove 3,4
+            model.foo.bars.remove(0);
+
+            console.log(model.foo.bars.value);
+/*
+            // remove 2
+            model.foo.bars.remove(-1);
+
+            console.log(model.foo.bars.value);
+
+            // remove bar
+			model.foo.remove('bar');
+
+			// remove all under c
+			model.c.remove();
+
+			// remove c
+			model.remove('c');
+*/
+			//console.log(model);
 
         }
 

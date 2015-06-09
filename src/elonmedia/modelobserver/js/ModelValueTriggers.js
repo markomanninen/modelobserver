@@ -124,11 +124,10 @@ function ModelValueTriggers(observer) {
     // path,...
     function setPathProperty(obj) {
         //var value = obj['path'];
-        // instead of setting fixed and static path, dynamic retreaval
+        // instead of setting fixed and static path, dynamic retrieval
         // based on parent keys are used here because keys may change
-        // on array push, remove, pop, shift and
+        // on array order, push, remove, pop, shift and unshift
         var get = function() {
-            //return value;
             if (this.parent)
                 return [this.key].concat(this.parent.path.reverse()).reverse();
             else return [this.key];
@@ -138,11 +137,15 @@ function ModelValueTriggers(observer) {
 
     // push... append: add item to the end of the array/list
     function defineArrayPushProperty(obj, property) {
-        obj[property]['push'] = function(value) {
-            observer.triggers.runTrigger.bind(this)('add', [value, obj[property], this.length, this.path, this.parent]);
-            var o = {};
-            o[this.parent[property].length] = value;
-            this.parent[property] = o;
+        obj[property]['push'] = function() {
+            if (arguments) {
+                observer.triggers.runTrigger.bind(this)('add', [arguments, obj[property], this.length, this.path, this.parent]);
+                for (var i in arguments) {
+                    observer.define(arguments[i], this, this.length, this.path.slice(), this.parent);
+                }
+                this[this.length-1].parent = this;
+                this.updated = getTimestamp();
+            }
         }
         defineProperty(obj[property], 'push');
     }
@@ -152,18 +155,21 @@ function ModelValueTriggers(observer) {
         obj[property]['unshift'] = function(value) {
             var l = this.length;
             if (l > 0) {
-                this.push({});
+                this.push();
                 do {
                     delete this[l];
                     this[l] = this[l-1];
                     this[l].key = l;
                     this[l].updated = getTimestamp();
+                    this[l].parent = this;
                     l -= 1;
                 } while (l > 0);
                 delete this[0];
             }
-            this.parent[property] = {0: value};
-            observer.triggers.runTrigger.bind(this)('add', [value, obj[property], 0, this.path, this.parent]);
+            observer.define(value, this, 0, this.path.slice(), this.parent);
+            this[0].parent = this;
+            this.updated = getTimestamp();
+            return observer.triggers.runTrigger.bind(this)('add', [value, obj[property], 0, this.path, this.parent]);
         }
         defineProperty(obj[property], 'unshift');
     }
@@ -171,7 +177,7 @@ function ModelValueTriggers(observer) {
     // pop... remove the last item
     function defineArrayPopProperty(obj, property) {
         obj[property]['pop'] = function() {
-            this.parent[property].remove(-1);
+            return this.parent[property].remove(-1);
         }
         defineProperty(obj[property], 'pop');
     }
@@ -179,12 +185,12 @@ function ModelValueTriggers(observer) {
     // shift... remove the first item
     function defineArrayShiftProperty(obj, property) {
         obj[property]['shift'] = function() {
-            var val = this.parent[property].remove(0);
+            return this.parent[property].remove(0);
         }
         defineProperty(obj[property], 'shift');
     }
 
-    // shift... remove the first item
+    // order... reorder array in place according to given function
     function defineArrayOrderProperty(obj, property) {
         obj[property]['order'] = function(func) {
             var args = {};
@@ -196,60 +202,43 @@ function ModelValueTriggers(observer) {
         defineProperty(obj[property], 'order');
     }
 
-    // splice... like javascript slice but without third parameter
-    function defineArrayRemoveProperty(obj, property) {
+    // remove... like javascript slice but without third parameter
+    function defineObjectRemoveProperty(obj, property) {
         // index: where to start removing. negative number starts from the end
         // of the list. howmany: how many items will be removed counting from the index.
         // default 1.
         obj[property]['remove'] = function(index, howmany) {
-            var m = this.parent[property];
-            var l = m.length-1;
-
-            // default howmany is 1. 0 not possible
-            if (howmany == undefined || howmany < 2) howmany = 1
-            var l1 = index < 0 ? index + m.length : index;
-            var l2 = l1+howmany;
-            var val = this.slice().filter(function(v){return v > l1 && v < l2});
-            //console.log(l1, l2, val);
+            var l = this.length;
+            var val = []; // removed items
             // remove all
             if (index == undefined) {
-                for (var i in m) {
-                    i = parseInt(i);
-                    delete m[i];
+                for (var i in this) {
+                    val.push(this[i]);
+                    delete this[i];
                 }
-                m.splice(0, l+1);
-            } else {
+                if (this.arrayMutation) this.splice(0, l);
+            } else if (typeof index == 'string') {
+                val.push(this[index]);
+                delete this[index];
+            } else if (typeof index == 'number') {
                 // remove howmany amount of items starting from index
-                if (index < 0) {
-                    index = index + l + 1;
-                }
-                if (index > -1 && index < l+1) {
-                    for (var i in m) {
-                        if (i >= index) {
-                            // array indexes are integers
-                            i = parseInt(i);
-                            delete m[i];
-                            if (i < l) {
-                                m[i] = m[i+1];
-                                m[i].key = i;
-                                m[i].updated = getTimestamp();
-                            }
-                        }
-                    }
-                    // remove null items
-                    m.splice(l, 1);
-
-                    //observer.triggers.runTrigger.bind(this)('add', [m, obj, index, this.path, this.parent]);
-
-                    // recursively remove rest of the items if needed
-                    howmany -= 1;
-                    if (howmany > 0) m.remove(index, howmany);
+                if (index < 0) {index = index + l;}
+                if (index > -1 && index < l) {
+                    // default howmany is 1. 0 not possible
+                    if (howmany == undefined || howmany < 1) howmany = 1; 
+                    // max howmany is length of the array
+                    if (howmany > l - index) howmany = l - index;
+                    var r = index;
+                    do {
+                        val.push(this[r]);
+                        delete this[r];
+                        r += 1;
+                    } while (r < index + howmany);
+                    this.splice(index, howmany);
                 }
             }
-            m.updated = getTimestamp();
-            // this dummy assignment triggers setter handler after removal of items
-            //this.parent[property] = {};
-            observer.triggers.runTrigger.bind(this)('remove', [val, obj[property], index, this.path, this.parent]);
+            this.updated = getTimestamp();
+            return observer.triggers.runTrigger.bind(this)('remove', [val, this, index]);
         }
         defineProperty(obj[property], 'remove');
     }
@@ -264,15 +253,17 @@ function ModelValueTriggers(observer) {
                 // branch / node property
                 model[property]['branch'] = true;
                 defineProperty(model[property], 'branch');
+
+                defineObjectRemoveProperty(model, property);
+
                 if (isArray(value)) {
                     // special methods for arrays/lists
                     // push, remove, pop, shift, unshift are supported
-                    // especially for set trigger, which is lanched by splice, shift and unshift functions.
+                    // especially for set trigger, which is launched by splice, shift and unshift functions.
                     model[property]['arrayMutation'] = true;
                     defineProperty(model[property], 'arrayMutation');
                 
                     defineArrayPushProperty(model, property);
-                    defineArrayRemoveProperty(model, property);
                     defineArrayPopProperty(model, property);
                     defineArrayShiftProperty(model, property);
                     defineArrayUnShiftProperty(model, property);
@@ -320,9 +311,23 @@ function ModelValueTriggers(observer) {
 
             return value;
         },
+        'set': function (value, old_value, property_stack) {
+            // console.log(this) -> cyclic object, but available!
+            //console.log(["value set", value, old_value, property_stack.join('.')]);
+
+            if (typeof value == "object") {
+                return value;
+            }
+            
+            old_value.old_value = old_value.value;
+            old_value.value = value.value;
+            
+            return old_value;
+        },
+        /*
         'get': function (value, property_stack) {
             // console.log(this) -> cyclic object, but available!
-            /*
+            
             if (value.node)
                 console.log(["value get (NODE)", value, property_stack.join('.')]);
             else
@@ -330,15 +335,8 @@ function ModelValueTriggers(observer) {
                     console.log(["value get (BRANCH)", value, property_stack.join('.')]);
                 else
                     console.log(["value get (ROOT)", value, property_stack.join('.')]);
-            */
+            
             return value;
-        },
-        'set': function (value, old_value, property_stack) {
-            // console.log(this) -> cyclic object, but available!
-            //console.log(["value set", value, old_value, property_stack.join('.')]);
-            old_value.old_value = old_value.value;
-            old_value.value = value;
-            return old_value;
         },
         'add': function (value, model, property, property_stack, parent) {
             // console.log(this) -> cyclic object, but available!
@@ -348,6 +346,7 @@ function ModelValueTriggers(observer) {
             // console.log(this) -> cyclic object, but available!
             return value;
         }
+        */
     };
 
     return {valueTriggers: valueTriggers};

@@ -110,13 +110,11 @@ function BaseModelObserver() {
             'set': function(value, old_value, property_stack){return value;}
         });
 
-        // object/array handler
         interfaceFactory.create('remove', {
             // this is called everytime model attribute is set
             'remove': function(value, model, property, property_stack, parent){return value;}
         });
 
-        // array handler
         interfaceFactory.create('add', {
             // this is called everytime model attribute is set
             'add': function(value, model, property, property_stack, parent){return value;}
@@ -189,21 +187,198 @@ function BaseModelObserver() {
         return obj;
     };
 
+    /*
+    // define branch and node
+    observer.define = function(value, model, property, property_stack, parent) {
+        // define initters for model
+        value = observer.handler.runHandler('initter', [value, model, property, property_stack, parent]);
+        Object.defineProperty(model, property, {
+            configurable: true,
+            // define getters for model
+            get: function () {
+                return observer.handler.runHandler.bind(this)('getter', [value, property_stack]);
+            },
+            // define setters for model
+            set: function (new_value) {
+                value = observer.handler.runHandler.bind(this)('setter', [new_value, value, property_stack]);
+            }
+        });
+    };
+    */
+
     // define branch and node
     observer.define = function(value, model, property, property_stack, parent) {
         // define initters for model
         value = observer.triggers.runTrigger('init', [value, model, property, property_stack, parent]);
+        /*
+        if (value !== null && typeof value === "object") {
+        } else {
+            model[property] = {};
+            model = model[property];
+            model['value'] = {};
+            Object.defineProperty(model, 'value', {enumerable: false, configurable: true});
+        }
+        */
         Object.defineProperty(model, property, {
-            enumerable: true, configurable: true,
+            enumerable: true, 
+            configurable: true,
             // define getters for model
             get: function () {
                 return observer.triggers.runTrigger.bind(this)('get', [value, property_stack]);
             },
             // define setters for model
             set: function (new_value) {
+            	/*
+            	if (this.arrayMutation) {
+            		new_value = observer.createModel([new_value], this.path, model);
+            	}
+            	model.parent[property] = new_value;
+            	console.log(1, new_value, this.arrayMutation);
+            	*/
+            	//new_value = observer.rec(new_value, this.path, model);
                 value = observer.triggers.runTrigger.bind(this)('set', [new_value, value, property_stack]);
             }
         });
+/*
+        // define key property for model
+        model['key'] = property;
+        Object.defineProperty(model, 'key', {value: property, enumerable: false, configurable: true});
+
+        // define path property for model
+        model['path'] = function() {
+            return parent ? parent.path().concat(parent.key) : [];
+        };
+        Object.defineProperty(model, 'path', {enumerable: false, configurable: true});
+*/
+/*
+        // define remover/deleter for model
+        model['remove'] = function(prop, howmany) {
+            var c;
+            if (prop != null && typeof prop != undefined) {
+                if (model.hasOwnProperty(prop)) {
+                    if (isArray(this)) {
+                        howmany = howmany || 1;
+                        // values for remove trigger
+                        var l1 = prop < 0 ? prop + this.length : prop;
+                        var l2 = l1+howmany+1;
+                        var val = this.slice().filter(function(v){return v > l1 && v < l2;});
+                        this.splice.apply(this, arguments);
+                        c = observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
+                        // values for add trigger. splice already did it, if arguments were > 2
+                        if (arguments.length > 2) {
+                            var d = {};
+                            for (var i in arguments) if (parseInt(i) > l1) d[i] = arguments[i];
+                            // call add trigger
+                            observer.triggers.runTrigger.bind(this)('add', [d, model, property, property_stack, parent]);
+                        }
+                        //return val;
+                    } else {
+                        c = observer.triggers.runTrigger.bind(this)('remove', [value, model, property, property_stack, parent]);
+                        model[prop] = null;
+                        delete model[prop];
+                    }
+                }
+            } else {
+                if (isArray(this)) {
+                    c = [];
+                    c = c.concat(this);
+                    this.splice(0, this.length);
+                } else {
+                    for (var i in this) {
+                        if (this.hasOwnProperty(i)) {
+                            c = this[i];
+                            this[i] = null;
+                            delete this[i];
+                        }
+                    }
+                }
+                observer.triggers.runTrigger.bind(this)('remove', [c, model, property, property_stack, parent]);
+            }
+            return c;
+        };
+        
+        Object.defineProperty(model, 'remove', {enumerable: false, configurable: true});
+
+        // define isRoot, isBranch, isNode properties for model
+        model['isRoot'] = property_stack.length == 2;
+        Object.defineProperty(model, 'isRoot', {enumerable: false, configurable: true});
+
+        model['isBranch'] = isObject(value);
+        Object.defineProperty(model, 'isBranch', {enumerable: false, configurable: true});
+
+        model['isNode'] = !model['isBranch'];
+        Object.defineProperty(model, 'isNode', {enumerable: false, configurable: true});
+
+        model['parent'] = parent;
+        Object.defineProperty(model, 'parent', {enumerable: false, configurable: true});
+
+
+        if (isArray(value)) {
+        	// especially for set trigger, which is lanched by splice, shift and unshift functions.
+        	model[property]['arrayMutation'] = true;
+        	Object.defineProperty(model[property], 'arrayMutation', {enumerable: false, configurable: true});
+        
+            
+            // special methods for arrays/lists
+            // push, remove, pop, shift, unshift are supported
+            model['_splice'] = function(index, howmany) {
+                // values for remove trigger
+                var l1 = index < 0 ? index + this[property].length : index;
+                var l2 = l1+howmany+1;
+                var val = this[property].slice().filter(function(v){return v > l1 && v < l2});
+                // splice and call remove trigger
+                this[property].splice.apply(this[property], arguments);
+                observer.triggers.runTrigger.bind(this)('remove', [val, model, property, property_stack, parent]);
+                if (arguments.length > 2) {
+                    // values for add trigger
+                    var d = {};
+                    for (var i in arguments) if (parseInt(i) > l1) d[i] = arguments[i];
+                    // call add trigger
+                    observer.triggers.runTrigger.bind(this)('add', [d, model, property, property_stack, parent]);
+                }
+                return val;
+            }
+            Object.defineProperty(model, '_splice', {enumerable: false, configurable: true});
+            
+            // append and return length of the array
+            model[property]['append'] = function(val) {
+                observer.triggers.runTrigger.bind(this)('add', [val, model, this.length, property_stack, parent]);
+                return this.push(val);
+            };
+            Object.defineProperty(model[property], 'append', {enumerable: false, configurable: true});
+
+            // prepend and return length of the array
+            model[property]['prepend'] = function(val) {
+                observer.triggers.runTrigger.bind(this)('add', [val, model, property, property_stack, parent]);
+                return this.unshift(val);
+            };
+            Object.defineProperty(model[property], 'prepend', {enumerable: false, configurable: true});
+
+            model[property]['last'] = function() {
+                var val = this.pop();
+                observer.triggers.runTrigger.bind(this)('remove', [val, model, this.length, property_stack, parent]);
+                return val;
+            };
+            Object.defineProperty(model[property], 'last', {enumerable: false, configurable: true});
+            
+            model[property]['first'] = function() {
+                var val = this.shift();
+                observer.triggers.runTrigger.bind(this)('remove', [val, model, 0, property_stack, parent]);
+                return val;
+            };
+            Object.defineProperty(model[property], 'first', {enumerable: false, configurable: true});
+            
+            model[property]['order'] = function(func) {
+                var args = {};
+                for (var i in arguments) if (i > 0) args[i] = arguments[i];
+                var val = func.apply(this, args);
+                observer.triggers.runTrigger.bind(this)('set', [val, model, 0, property_stack, parent]);
+                return val;
+            };
+            Object.defineProperty(model[property], 'order', {enumerable: false, configurable: true});
+
+        }
+        */
     };
 
     return observer;
