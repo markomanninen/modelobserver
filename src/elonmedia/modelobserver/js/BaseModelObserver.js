@@ -210,20 +210,15 @@ function BaseModelObserver() {
     observer.define = function(value, model, property, property_stack, parent) {
         // define initters for model
         value = observer.triggers.runTrigger('init', [value, model, property, property_stack, parent]);
-        
+        /*
         if (value !== null && typeof value === "object") {
-
         } else {
-            /*
             model[property] = {};
-
             model = model[property];
-
             model['value'] = {};
             Object.defineProperty(model, 'value', {enumerable: false, configurable: true});
-            */
         }
-
+        */
         Object.defineProperty(model, property, {
             enumerable: true, 
             configurable: true,
@@ -255,6 +250,7 @@ function BaseModelObserver() {
         };
         Object.defineProperty(model, 'path', {enumerable: false, configurable: true});
 */
+/*
         // define remover/deleter for model
         model['remove'] = function(prop, howmany) {
             var c;
@@ -322,10 +318,10 @@ function BaseModelObserver() {
         	model[property]['arrayMutation'] = true;
         	Object.defineProperty(model[property], 'arrayMutation', {enumerable: false, configurable: true});
         
-            /*
+            
             // special methods for arrays/lists
             // push, remove, pop, shift, unshift are supported
-            model['splice'] = function(index, howmany) {
+            model['_splice'] = function(index, howmany) {
                 // values for remove trigger
                 var l1 = index < 0 ? index + this[property].length : index;
                 var l2 = l1+howmany+1;
@@ -342,8 +338,8 @@ function BaseModelObserver() {
                 }
                 return val;
             }
-            Object.defineProperty(model, 'splice', {enumerable: false, configurable: true});
-            */
+            Object.defineProperty(model, '_splice', {enumerable: false, configurable: true});
+            
             // append and return length of the array
             model[property]['append'] = function(val) {
                 observer.triggers.runTrigger.bind(this)('add', [val, model, this.length, property_stack, parent]);
@@ -382,6 +378,7 @@ function BaseModelObserver() {
             Object.defineProperty(model[property], 'order', {enumerable: false, configurable: true});
 
         }
+        */
     };
 
     return observer;
