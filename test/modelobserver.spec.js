@@ -253,7 +253,7 @@ describe('ModelValueTriggers', function () {
         expect(model.foo.bars.value).toEqual({ 0: 0, 1: 1, 2: 2, 3: 3 });
 
         // items affected
-        expect(Object(c)).toEqual({0: 1, 1: 0});
+        expect(Array.prototype.slice.call(c)).toEqual([1, 0]);
 
     });
 
@@ -280,7 +280,7 @@ describe('ModelValueTriggers', function () {
         // same as:
         //expect(model.foo.bars.value).toEqual([1, 2, 3]);
         model.foo.bars.remove();
-        expect(model.foo.bars).toEqual({});
+        expect(model.foo.bars).toEqual([]);
         // same as:
         //expect(model.foo.bars).toEqual([]);
 
