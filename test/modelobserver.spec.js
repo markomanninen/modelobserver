@@ -246,14 +246,14 @@ describe('ModelValueTriggers', function () {
 
         model.foo.bars.push(2, 3);
 
-        expect(model.foo.bars.value).toEqual([2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 2, 1: 3 });
 
         var c = model.foo.bars.unshift(1, 0);
 
-        expect(model.foo.bars.value).toEqual([0, 1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 0, 1: 1, 2: 2, 3: 3 });
 
         // items affected
-        expect(c).toEqual({0: 1, 1: 0});
+        expect(Object(c)).toEqual({0: 1, 1: 0});
 
     });
 
@@ -267,7 +267,7 @@ describe('ModelValueTriggers', function () {
 
     it('Remove all under foo', function () {
 
-        expect(model.foo.value).toEqual({bar: 'baz', bars: []});
+        expect(model.foo.value).toEqual({bar: 'baz', bars: {}});
         model.foo.remove();
         expect(model.foo).toEqual({});
 
@@ -289,36 +289,36 @@ describe('ModelValueTriggers', function () {
     it('Remove middle array item', function () {
 
         model.foo.bars.push(1, 2, 3);
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
         model.foo.bars.remove(1);
-        expect(model.foo.bars.value).toEqual([1,3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 3 });
 
     });
 
     it('Remove middle array item (-2)', function () {
 
         model.foo.bars.push(1, 2, 3);
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
         model.foo.bars.remove(-2);
-        expect(model.foo.bars.value).toEqual([1,3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 3 });
 
     });
 
     it('Remove first two array items', function () {
 
         model.foo.bars.push(1, 2, 3);
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
         model.foo.bars.remove(0,2);
-        expect(model.foo.bars.value).toEqual([3]);
+        expect(model.foo.bars.value).toEqual({ 0: 3 });
 
     });
 
     it('Remove last two array items', function () {
 
         model.foo.bars.push(1, 2, 3);
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
         model.foo.bars.remove(1,2);
-        expect(model.foo.bars.value).toEqual([1]);
+        expect(model.foo.bars.value).toEqual({ 0: 1 });
 
     });
 
@@ -326,11 +326,11 @@ describe('ModelValueTriggers', function () {
 
         model.foo.bars.push(1, 2, 3);
 
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
 
         var c = model.foo.bars.pop();
 
-        expect(model.foo.bars.value).toEqual([1, 2]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2 });
 
         // removed item
         expect(c.length).toBe(1);
@@ -343,11 +343,11 @@ describe('ModelValueTriggers', function () {
 
         model.foo.bars.push(1, 2, 3);
 
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
 
         var c = model.foo.bars.shift();
 
-        expect(model.foo.bars.value).toEqual([2, 3]);
+        expect(model.foo.bars.value).toEqual({ 0: 2, 1: 3 });
 
         // removed item
         expect(c.length).toBe(1);
