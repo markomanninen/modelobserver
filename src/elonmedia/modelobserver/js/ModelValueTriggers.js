@@ -143,10 +143,13 @@ function ModelValueTriggers(observer) {
             if (arguments) {
                 observer.triggers.runTrigger.bind(this)('add', [arguments, obj[property], this.length, this.path, this.parent]);
                 for (var i in arguments) {
-                    //if (typeof arguments[i] == 'object')
-                    //    arguments[i] = observer.createModel(arguments[i], this.path.slice(), this.parent);
-                    observer.define(arguments[i], this, this.length, this.path.slice(), this.parent);
-                    this[this.length-1].parent = this;
+                    if (typeof arguments[i] == 'object') {
+                        observer.createModel(arguments[i], this.path.slice(0), this.parent, i);
+                        this[this.length] = arguments[i];
+                    } else {
+                        observer.define(arguments[i], this, this.length, this.path.slice(), this.parent);
+                        this[this.length-1].parent = this;
+                    }
                 }
                 this.updated = getTimestamp();
             }
@@ -158,10 +161,10 @@ function ModelValueTriggers(observer) {
     function defineArrayUnShiftProperty(obj, property) {
         obj[property]['unshift'] = function() {
             for (var i in arguments) {
-                var value = arguments[i];
+                //var value = arguments[i];
                 var l = this.length;
                 if (l > 0) {
-                    this.push();
+                    //this.push();
                     do {
                         delete this[l];
                         this[l] = this[l-1];
@@ -172,8 +175,14 @@ function ModelValueTriggers(observer) {
                     } while (l > 0);
                     delete this[0];
                 }
-                observer.define(value, this, 0, this.path.slice(), this.parent);
-                this[0].parent = this;
+                if (typeof arguments[i] == 'object') {
+                    observer.createModel(arguments[i], this.path.slice(0), this.parent, 0);
+                    this[0] = arguments[i];
+                    this[0].parent = this;
+                } else {
+                    observer.define(arguments[i], this, 0, this.path.slice(), this.parent);
+                    this[0].parent = this;
+                }
                 this.updated = getTimestamp();
             }
             return observer.triggers.runTrigger.bind(this)('add', [arguments, obj[property], 0, this.path, this.parent]);

@@ -170,7 +170,7 @@ function BaseModelObserver() {
 
     observer.createModel = function(model, properties, parent, root_name) {
         // create temporary root for model
-        var root_name = root_name || 'root';
+        var root_name = typeof root_name != "undefined" ? root_name : 'root';
         // temporary root handler
         var root = {};
         root[root_name] = model;

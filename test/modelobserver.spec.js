@@ -242,6 +242,16 @@ describe('ModelValueTriggers', function () {
 
     });
 
+    it('Push objects to bars', function () {
+
+        model.foo.bars.push({a:1}, {b:{c:1}});
+
+        expect(model.foo.bars.value).toEqual({"0":{"a":1},"1":{"b":{"c":1}}});
+
+        expect(model.foo.bars[1].b.c.value).toBe(1);
+
+    });
+
     it('Ushift items to the beginning of the array', function () {
 
         model.foo.bars.push(2, 3);
@@ -254,6 +264,18 @@ describe('ModelValueTriggers', function () {
 
         // items affected
         expect(Array.prototype.slice.call(c)).toEqual([1, 0]);
+
+    });
+
+    it('Ushift objects to the beginning of the array', function () {
+
+        model.foo.bars.unshift({b:{c:1}}, {a:[1,2,3]});
+
+        expect(model.foo.bars.value).toEqual({"0":{"a":[1,2,3]},"1":{"b":{"c":1}}});
+
+        expect(model.foo.bars[1].b.c.value).toBe(1);
+
+        expect(model.foo.bars[0].a[0].path).toEqual(["root","foo","bars","0","a","0"]);
 
     });
 

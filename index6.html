@@ -122,7 +122,9 @@
             //op6();
             //op7();
             //op8();
-            op9();
+            //op9();
+            //op10();
+            op11();
         });
 
         function op1() {
@@ -309,6 +311,28 @@
             console.log(c);
 
             console.log(model.foo.bars.value);
+        }
+
+        function op10() {
+
+            var obj = {foo: {bars: []}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bars.push({a:1}, {b:{c:1}});
+
+            console.log(model.foo.bars[1].b.c.value);
+        }
+
+        function op11() {
+
+            var obj = {foo: {bars: []}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bars.unshift({b:{c:1}}, {a:[1,2,3]});
+
+            console.log(model.foo.bars[0].a[0].path);
         }
 
         </script>
