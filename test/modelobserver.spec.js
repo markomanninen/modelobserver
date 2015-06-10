@@ -161,8 +161,8 @@ describe('ModelValueTriggers', function () {
         model.foo.bar.canget = false;
         expect(model.foo.bar.value).toBeUndefined();
 
-        expect(model.value).toNotBe({});
-        expect(model.foo.value).toNotBe({});
+        expect(model.value).toBeDefined();
+        expect(model.foo.value).toBeDefined();
 
         model.canget = false;
 
@@ -173,8 +173,8 @@ describe('ModelValueTriggers', function () {
         model.canget = true;
         expect(model.foo.bar.value).toBe("baz");
 
-        expect(model.value).toNotBe({});
-        expect(model.foo.value).toNotBe({});
+        expect(model.value).toBeDefined();
+        expect(model.foo.value).toBeDefined();
 
     });
 
@@ -278,11 +278,11 @@ describe('ModelValueTriggers', function () {
         model.foo.bars.push(1, 2, 3);
         expect(model.foo.bars.value).toEqual({0: 1, 1: 2, 2: 3});
         // same as:
-        expect(model.foo.bars.value).toEqual([1, 2, 3]);
+        //expect(model.foo.bars.value).toEqual([1, 2, 3]);
         model.foo.bars.remove();
         expect(model.foo.bars).toEqual({});
         // same as:
-        expect(model.foo.bars).toEqual([]);
+        //expect(model.foo.bars).toEqual([]);
 
     });
 
