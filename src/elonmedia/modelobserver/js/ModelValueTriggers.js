@@ -209,8 +209,8 @@ function ModelValueTriggers(observer) {
     // order... reorder array in place according to given function
     function defineArrayOrderProperty(obj, property) {
         obj[property]['order'] = function(func) {
-            var args = {};
-            for (var i in arguments) if (i > 0) args[i] = arguments[i];
+            var args = [];
+            for (var i in arguments) if (i > 0) args.push(arguments[i]);
             var val = func.apply(this, args);
             observer.triggers.runTrigger.bind(this)('set', [val, obj, this.path]);
             return val;

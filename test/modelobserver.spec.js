@@ -271,7 +271,7 @@ describe('ModelValueTriggers', function () {
 
         model.foo.bars.unshift({b:{c:1}}, {a:[1,2,3]});
 
-        expect(model.foo.bars.value).toEqual({"0":{"a":[1,2,3]},"1":{"b":{"c":1}}});
+        expect(model.foo.bars.value).toEqual({"0":{"a":{0:1,1:2,2:3}},"1":{"b":{"c":1}}});
 
         expect(model.foo.bars[1].b.c.value).toBe(1);
 
@@ -378,6 +378,27 @@ describe('ModelValueTriggers', function () {
 
     });
 
+    it('Order array items (reverse)', function () {
+
+        model.foo.bars.push(1, 2, 3);
+        
+        model.foo.bars.order(Array.prototype.reverse);
+
+        expect(model.foo.bars.value).toEqual({ 0: 3, 1: 2, 2: 1 });
+
+    });
+
+    it('Order array items (sort)', function () {
+        model.foo.bars.push(3, 2, 1);
+        var a = model.foo.bars.order(
+            Array.prototype.sort, 
+            function(a,b) {
+                return a.value-b.value;
+            }
+        );
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3 });
+
+    });
 
 
 });
