@@ -9,7 +9,7 @@
         <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
 -->
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
 
         <style>
@@ -44,8 +44,10 @@
 
         <script id="log">
 
-        var obs = BaseModelObserver();
-        var moh = ModelObserverHandlers(obs);
+        var obs = new BaseModelObserver();
+        var moh = new ModelValueTriggers(obs);
+
+        obs.triggers.defines(moh.valueTriggers);
 
         $(document).ready(function() {
             //op6();
@@ -55,7 +57,7 @@
 
         function op6() {
 
-            obs.handler.define(moh.valueHandler);
+            
 
             var obj = {foo: []};
 
@@ -77,26 +79,27 @@
 
         function op7() {
 
-            obs.handler.define(moh.valueHandler);
-
             var obj = {foo: [{bar: [{a:1}, {b:1}, {c:1}]}]};
             //var obj = {foo: [{bar: [{a:1}, {b:1}]}]};
 
             var model = obs.createModel(obj);
             
-            console.log(0);
 
-            model.foo[0].bar.push({d: 1});
+            model.foo[0].bar = {3: {d: 1}};
+
+            //model.foo[0].bar.push({d: 1});
+
+            //console.log(model);
 
             console.log(model.foo[0].updated);
             
-            console.log(1);
+            console.log(model.foo);
 
             model.foo[0].bar.remove(1);
             
-            console.log(2);
             //model.foo[0].bar.remove();
 
+            model.foo[0].bar = {3: {e: 1}};
             //model.foo[0].bar.push({e: 1});
             
             console.log(model.foo[0].bar[2].updated);
@@ -106,12 +109,10 @@
             console.log(model.updated);
             console.log(model.foo[0].bar[1].c.path);
             console.log(model.foo[0].bar[1].key);
-
+            
         }
 
         function op8() {
-
-            obs.handler.define(moh.valueHandler);
 
             var obj = {foo: [{bar: [{a:1}, {b:1}]}]};
 

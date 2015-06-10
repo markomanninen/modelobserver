@@ -9,8 +9,8 @@
         <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
 -->
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormTriggers.js"></script>
 
         <style>
             #console-log-div {
@@ -46,9 +46,11 @@
 
 
 
-        var obs = BaseModelObserver();
-        var moh = ModelObserverHandlers(obs);
-        var mfh = ModelFormHandlers();
+        var obs = new BaseModelObserver();
+        var moh = new ModelValueTriggers(obs);
+        //var mfh = ModelFormTriggers(obs);
+        obs.triggers.defines(moh.valueTriggers);
+        //obs.triggers.defines(mfh.formTriggers);
 
         $(document).ready(function() {
 
@@ -60,8 +62,6 @@
 
         function op1() {
             // initialize observer and handler
-
-            obs.handler.define(moh.valueHandler);
 
             // create model
 
@@ -102,10 +102,6 @@
             console.log("User.firstname.value:", c.user.firstname.value);
             console.log("User.lastname.value:", c.user.lastname.value);
 
-            console.log("");
-            console.log("Just a logger:");
-            console.log("");
-
         }
 
         function op2() {
@@ -113,15 +109,15 @@
             //var obs = BaseModelObserver();
 
             var logger = {
-                initter: function(value, model, property, property_stack, parent) {
+                'init': function(value, model, property, property_stack, parent) {
                     console.log(["init", value, model, property, property_stack.join('.'), parent]);
                     return value;
                 },
-                getter: function(value, property_stack) {
+                'get': function(value, property_stack) {
                     console.log(["get", value, property_stack.join('.')]);
                     return value;
                 },
-                setter: function(value, old_value, property_stack) {
+                'set': function(value, old_value, property_stack) {
                     console.log(["set", value, old_value, property_stack.join('.')]);
                     return value;
                 }
@@ -129,11 +125,17 @@
 
             // add new log handler upon valueHandler!
 
-            obs.handler.define(logger);
+            obs.triggers.defines(logger);
+
+            console.log("");
+            console.log("Just a logger:");
+            console.log("");
 
             var obj = {foo: {bar: 1}};
 
             var model = obs.createModel(obj);
+
+            model.foo.bar = 2;
 
             console.log(model);
 
@@ -142,11 +144,11 @@
         function op3() {
 
             var obs = BaseModelObserver();
-            var moh = ModelObserverHandlers(obs);
-            var mfh = ModelFormHandlers(obs);
+            var moh = ModelValueTriggers(obs);
+            var mfh = ModelFormTriggers(obs);
 
-            obs.handler.define(moh.valueHandler);
-            obs.handler.define(mfh.formHandler);
+            obs.triggers.defines(moh.valueTriggers);
+            obs.triggers.defines(mfh.formTriggers);
 
             console.log("");
             console.log("Form binder:");

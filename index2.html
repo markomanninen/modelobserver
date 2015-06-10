@@ -9,7 +9,7 @@
         <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
 -->
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
 
         <style>
@@ -44,16 +44,16 @@
 
         <script id="log">
 
-        var obs = BaseModelObserver();
-        var moh = ModelObserverHandlers(obs);
+        var obs = new BaseModelObserver();
+        var moh = new ModelValueTriggers(obs);
+
+        obs.triggers.defines(moh.valueTriggers);
 
         $(document).ready(function() {
             op4();
         });
 
         function op4() {
-
-            obs.handler.define(moh.valueHandler);
 
             var obj = {foo: {bars: [1,2]}};
 

@@ -45,6 +45,7 @@ function ModelValueTriggers(observer) {
         };
         config['set'] = function(new_value) {
             if (this.canset) {
+                //console.log('node set', this.path.join('.'));
                 value = new_value;
                 this.updated = getTimestamp();
             }
@@ -66,6 +67,7 @@ function ModelValueTriggers(observer) {
         };
         config['set'] = function(new_value) {
             if (this.canset) {
+                //console.log('branch set', this.path.join('.'));
                 var props = this.path.slice();
                 for (var property in new_value) {
                     props.push(property);
@@ -141,9 +143,11 @@ function ModelValueTriggers(observer) {
             if (arguments) {
                 observer.triggers.runTrigger.bind(this)('add', [arguments, obj[property], this.length, this.path, this.parent]);
                 for (var i in arguments) {
+                    //if (typeof arguments[i] == 'object')
+                    //    arguments[i] = observer.createModel(arguments[i], this.path.slice(), this.parent);
                     observer.define(arguments[i], this, this.length, this.path.slice(), this.parent);
+                    this[this.length-1].parent = this;
                 }
-                this[this.length-1].parent = this;
                 this.updated = getTimestamp();
             }
         }
@@ -152,24 +156,27 @@ function ModelValueTriggers(observer) {
 
     // unshift... add item to the beginning of the array/list
     function defineArrayUnShiftProperty(obj, property) {
-        obj[property]['unshift'] = function(value) {
-            var l = this.length;
-            if (l > 0) {
-                this.push();
-                do {
-                    delete this[l];
-                    this[l] = this[l-1];
-                    this[l].key = l;
-                    this[l].updated = getTimestamp();
-                    this[l].parent = this;
-                    l -= 1;
-                } while (l > 0);
-                delete this[0];
+        obj[property]['unshift'] = function() {
+            for (var i in arguments) {
+                var value = arguments[i];
+                var l = this.length;
+                if (l > 0) {
+                    this.push();
+                    do {
+                        delete this[l];
+                        this[l] = this[l-1];
+                        this[l].key = l;
+                        this[l].updated = getTimestamp();
+                        this[l].parent = this;
+                        l -= 1;
+                    } while (l > 0);
+                    delete this[0];
+                }
+                observer.define(value, this, 0, this.path.slice(), this.parent);
+                this[0].parent = this;
+                this.updated = getTimestamp();
             }
-            observer.define(value, this, 0, this.path.slice(), this.parent);
-            this[0].parent = this;
-            this.updated = getTimestamp();
-            return observer.triggers.runTrigger.bind(this)('add', [value, obj[property], 0, this.path, this.parent]);
+            return observer.triggers.runTrigger.bind(this)('add', [arguments, obj[property], 0, this.path, this.parent]);
         }
         defineProperty(obj[property], 'unshift');
     }
@@ -314,13 +321,16 @@ function ModelValueTriggers(observer) {
         'set': function (value, old_value, property_stack) {
             // console.log(this) -> cyclic object, but available!
             //console.log(["value set", value, old_value, property_stack.join('.')]);
-
-            if (typeof value == "object") {
+            
+            // TODO: this is needed for array mutations,
+            // splice function with howmany = 1 will give strange behaviour
+            // on the setter... must be examined more closely
+            if (this.arrayMutation) {
                 return value;
             }
-            
+
             old_value.old_value = old_value.value;
-            old_value.value = value.value;
+            old_value.value = value;
             
             return old_value;
         },

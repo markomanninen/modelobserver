@@ -67,8 +67,8 @@
     		'set': function(value, old_value, property_stack) {
     			// maybe you dont' want to track array mutations
     			// because it is triggered on every array change
-    			if (!old_value.arrayMutation && (!old_value.parent || !old_value.parent.arrayMutation))
-    				console.log('set', value, old_value, property_stack);
+    			//if (!old_value.arrayMutation && (!old_value.parent || !old_value.parent.arrayMutation))
+    			console.log('set', value, old_value, property_stack);
     			return value;
     		}
     	}
@@ -114,9 +114,15 @@
         //obs.triggers.define('add', add);
 
         $(document).ready(function() {
-            op1();
+            //op1();
             //op2();
             //op3();
+            //op4();
+            //op5();
+            //op6();
+            //op7();
+            //op8();
+            op9();
         });
 
         function op1() {
@@ -187,6 +193,122 @@
 */
 			//console.log(model);
 
+        }
+
+        function op4() {
+
+            var obj = {foo: {bars: []}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bars.push(1);
+
+            console.log(model.foo.bars[0].updated);
+
+        }
+
+        function op5() {
+
+            var obj = {};
+            var model = obs.createModel(obj);
+            // root cannot be changes this way
+            model = {foo: "bar"};
+            console.log(model);
+
+            var obj = {};
+            var model = obs.createModel(obj);
+            // must use value
+            model.value = {foo: "bar"};
+            console.log(model);
+
+            var obj = {foo: {}};
+            var model = obs.createModel(obj);
+            // but branch can be modified this way
+            model.foo = {bar: "baz"};
+            console.log(model);
+
+            var obj = {foo: {}};
+            var model = obs.createModel(obj);
+            // also value setter works
+            model.foo.value = {bar2: "baz2"};
+            console.log(model);
+
+            var obj = {foo: {}};
+            var model = obs.createModel(obj);
+            // setter in this sense doesn't remove former properties
+            // with different keys, but will replace values with same properties
+            model.foo = {bar: "baz"};
+            model.foo = {bar2: "baz2"};
+            model.foo = {bar2: "BAZ2"};
+            model.foo.value = {bar3: "baz3"};
+            model.foo.value = {bar4: "baz4"};
+            model.foo.value = {bar4: "BAZ4"};
+            console.log(model);
+
+        }
+
+        function op6() {
+
+            var obj = {foo: {bar: "baz"}};
+            var model = obs.createModel(obj);
+
+
+
+    /*
+            expect(m.foo.bar.canset).toBe(true);
+            m.foo.bar.canset = false;
+
+            expect(m.foo.bar.value).toBe("baz");
+            m.foo.bar = "BAZ";
+            expect(m.foo.bar.value).toBe("baz");
+    */
+            model.canset = false;
+
+            model.value = {foo2: 1};
+            model.foo = {bar2: 1};
+            model.foo.bar = "BAZ";
+
+            console.log(model.value);
+        }
+
+        function op7() {
+
+            var obj = {foo: {bar: "baz"}};
+            var model = obs.createModel(obj);
+
+            model.remove();
+
+            console.log(model);
+        }
+
+        function op8() {
+
+            var obj = {foo: {bars: []}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bars.push(1, 2, 3);
+
+            var c = model.foo.bars.pop();
+
+            console.log(c);
+
+            console.log(model.foo.bars.value);
+        }
+
+        function op9() {
+
+            var obj = {foo: {bars: []}};
+
+            var model = obs.createModel(obj);
+
+            model.foo.bars.push(1, 2, 3);
+
+            var c = model.foo.bars.shift();
+
+            console.log(c);
+
+            console.log(model.foo.bars.value);
         }
 
         </script>
