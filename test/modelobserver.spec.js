@@ -5,6 +5,10 @@ if( typeof BaseModelObserver === 'undefined' ) {
   var BaseModelObserver = require('../dist/modelobserver.min.js').BaseModelObserver;
 }
 
+if( typeof ModelValueTriggers === 'undefined' ) {
+  var ModelValueTriggers = require('../dist/modelobserver.min.js').ModelValueTriggers;
+}
+
 describe('BaseModelObserver', function () {
 
     var obs;
