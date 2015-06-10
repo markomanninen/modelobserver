@@ -63,9 +63,9 @@ describe('ModelValueTriggers', function () {
         var obj = {};
         var m = obs.createModel(obj);
 
-        expect(m.created).toNotBe(undefined);
-        expect(m.updated).toBe(undefined);
-        expect(m.parent).toBe(undefined);
+        expect(m.created).toBeDefined();
+        expect(m.updated).toBeUndefined();
+        expect(m.parent).toBeUndefined();
         expect(m.canget).toBe(true);
         expect(m.canset).toBe(true);
         expect(m.branch).toBe(true);
@@ -91,7 +91,7 @@ describe('ModelValueTriggers', function () {
 
         // observer doesn't recognize this
         m.foo = "bar";
-        expect(m.foo.key).toBe(undefined);
+        expect(m.foo.key).toBeUndefined();
         // but property will be treated as normal javascrit object
         expect(m.foo).toBe("bar");
 
@@ -144,13 +144,13 @@ describe('ModelValueTriggers', function () {
 
     it('Push dummy to bars', function () {
 
-        expect(model.foo.bars.updated).toBe(undefined);
+        expect(model.foo.bars.updated).toBeUndefined();
 
         model.foo.bars.push();
         
         expect(model.foo.bars.length).toBe(0);
         expect(model.foo.bars.value).toEqual({});
-        expect(model.foo.bars.updated).toNotBe(undefined);
+        expect(model.foo.bars.updated).toBeDefined();
     });
 
     it('Can get properties', function () {
@@ -159,7 +159,7 @@ describe('ModelValueTriggers', function () {
 
         expect(model.foo.bar.value).toBe("baz");
         model.foo.bar.canget = false;
-        expect(model.foo.bar.value).toBe(undefined);
+        expect(model.foo.bar.value).toBeUndefined();
 
         expect(model.value).toNotBe({});
         expect(model.foo.value).toNotBe({});
@@ -168,7 +168,7 @@ describe('ModelValueTriggers', function () {
 
         expect(model.value).toEqual({});
         expect(model.foo.value).toEqual({});
-        expect(model.foo.bar.value).toEqual(undefined);
+        expect(model.foo.bar.value).toBeUndefined();
 
         model.canget = true;
         expect(model.foo.bar.value).toBe("baz");
@@ -211,7 +211,7 @@ describe('ModelValueTriggers', function () {
         expect(model.foo.bars[0].parent.key).toBe('bars');
         expect(model.foo.bars.parent.key).toBe('foo');
         expect(model.foo.parent.key).toBe('root');
-        expect(model.parent).toBe(undefined);
+        expect(model.parent).toBeUndefined();
     });
 
     it('Push 1 to bars', function () {
@@ -222,14 +222,14 @@ describe('ModelValueTriggers', function () {
         expect(model.foo.bars[0].path).toEqual(["root","foo","bars",0]);
         expect(model.foo.bars[0].parent.key).toBe("bars");
         expect(model.foo.bars[0].value).toBe(1);
-        expect(model.foo.bars.updated).toNotBe(undefined);
+        expect(model.foo.bars.updated).toBeDefined();
     });
 
     it('Push 1, 2, 3 to bars', function () {
 
         model.foo.bars.push(1, 2, 3);
 
-        expect(model.foo.bars.updated).toNotBe(undefined);
+        expect(model.foo.bars.updated).toBeDefined();
         expect(model.foo.bars.length).toBe(3);
         expect(Object.keys(model.foo.bars)).toEqual(['0','1','2']);
 
@@ -237,7 +237,7 @@ describe('ModelValueTriggers', function () {
             expect(model.foo.bars[i].path).toEqual(["root","foo","bars", parseInt(i)]);
             expect(model.foo.bars[i].parent.key).toBe("bars");
             expect(model.foo.bars[i].value).toBe(parseInt(i)+1);
-            expect(model.foo.bars[i].updated).toBe(undefined);
+            expect(model.foo.bars[i].updated).toBeUndefined();
         }
 
     });
@@ -261,7 +261,7 @@ describe('ModelValueTriggers', function () {
 
         expect(model.foo.bar.value).toBe("baz");
         model.foo.remove('bar');
-        expect(model.foo.bar).toBe(undefined);
+        expect(model.foo.bar).toBeUndefined();
 
     });
 
