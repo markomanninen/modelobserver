@@ -125,7 +125,8 @@
             //op9();
             //op10();
             //op11();
-            op12();
+            //op12();
+            op13();
         });
 
         function op1() {
@@ -358,7 +359,7 @@
                     return a.value-b.value;
                 }
             );
-            
+
             //model.foo.bars.sort(function(a,b){return a.value-b.value;});
 
             console.log(model.foo.bars.value);
@@ -369,6 +370,29 @@
 
             console.log(numbers);
             */
+        }
+
+        function op13() {
+
+            var obj = {
+                foo: {
+                    bar: {
+                        get: function() {
+                            return this.parent.parent.baz
+                        }, 
+                        set: function(val) {
+                            this.parent.parent.baz = val;
+                        }
+                    },
+                    baz: 1
+                }
+            };
+
+            var model = obs.createModel(obj);
+
+            console.log(model.foo.bar.get.value().value);
+            model.foo.bar.set.value(3);
+            console.log(model.foo.bar.get.value().value);
         }
 
         </script>

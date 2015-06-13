@@ -400,5 +400,20 @@ describe('ModelValueTriggers', function () {
 
     });
 
+    it('Move array items', function () {
+        model.foo.bars.push(1, 2, 3, 4, 5);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3, 3: 4, 4: 5 });
+        model.foo.bars.move(0, 3, 5);
+        expect(model.foo.bars.value).toEqual({ 0: 4, 1: 5, 2: 1, 3: 2, 4: 3 });
+    });
+
+    it('Swap array items', function () {
+        model.foo.bars.push(1, 2, 3, 4, 5);
+        expect(model.foo.bars.value).toEqual({ 0: 1, 1: 2, 2: 3, 3: 4, 4: 5 });
+        model.foo.bars.swap(4, 0);
+        expect(model.foo.bars.value).toEqual({ 0: 5, 1: 2, 2: 3, 3: 4, 4: 1 });
+        expect(model.foo.bars[0].key).toBe(0);
+        expect(model.foo.bars[4].key).toBe(4);
+    });
 
 });

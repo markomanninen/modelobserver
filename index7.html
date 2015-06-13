@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        
+        <meta charset="utf-8" />
+        
+        <title>Model Observer</title>
+<!--
+        <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+-->
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
+<!--
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+-->
+        <style>
+            #console-log-div {
+              border: 1px solid gray;
+              padding: 10px 10px;
+              border-radius: 5px;
+              width: 95% !important;
+              background-color: #333;
+              color: yellow;
+            }
+            #console-log-text {
+                margin-top: -5px;
+                margin-bottom: 5px;
+            }
+            #console-log-div legend {
+                color: black;
+                position: relative;
+                top: -15px;
+                left: -10px;
+                font-size: 16px;
+                text-transform: capitalize;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
+
+        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
+        <script id="log">
+
+        var obs = BaseModelObserver();
+
+        var init = {
+    		'init': function(value, model, property, property_stack, parent) {
+    			console.log('init', value, model, property, property_stack, parent);
+    			return value;
+    		}
+    	}
+
+    	var get = {
+    		'get': function(value, property_stack) {
+    			console.log('get', value, property_stack);
+    			return value;
+    		}
+    	}
+
+    	var set = {
+    		'set': function(value, old_value, property_stack) {
+    			// maybe you dont' want to track array mutations
+    			// because it is triggered on every array change
+    			if (!old_value.arrayMutation && (!old_value.parent || !old_value.parent.arrayMutation))
+    				console.log('set', value, old_value, property_stack);
+    			return value;
+    		}
+    	}
+
+    	var remove = {
+    		'remove': function(value, model, property, property_stack, parent) {
+    			console.log('remove', 
+    						value.map(function(v){return v.value;}), // what was removed
+    						typeof property != "undefined" ? property : "undefined", // index of the removal operation
+    						model.value, // what is left after removal
+    						this.path.join('.') // path of the removal operation
+    			);
+    			// must return value for further processing
+    			return value;
+    		}
+    	}
+
+		var add = {
+    		'add': function(value, model, property, property_stack, parent) {
+    			console.log('add', value, model, property, property_stack, parent);
+    			return value;
+    		}
+    	}
+
+    	var logger = {
+    		//'init': init.init,
+    		//'get': get.get,
+    		'set': set.set,
+    		'remove': remove.remove,
+    		'add': add.add,
+    	}
+
+        obs.triggers.defines(logger);
+
+		var mvt = new ModelValueTriggers(obs);
+
+		obs.triggers.defines(mvt.valueTriggers);
+
+        //obs.triggers.define('init', init);
+        //obs.triggers.define('get', get);
+        //obs.triggers.define('set', set);
+        //obs.triggers.define('remove', remove);
+        //obs.triggers.define('add', add);
+
+        $(document).ready(function() {
+            //op1();
+            op2();
+        });
+
+        function op1() {
+
+            var obj = {foo: {bar: "baz", bars: [1,2,3,4,5]}};
+
+            var model = obs.createModel(obj);
+
+            console.log(model.foo.bars.value);
+
+            move(model.foo.bars, 0, 3, 6);
+
+            console.log(model.foo.bars);
+            console.log(model.foo.bars.value);
+
+            var l = [1,2,3,4,5];
+            move(l, 0, 3, 5);
+            console.log(l);
+        }
+
+        function op2() {
+            var obj = {foo: {bar: "baz", bars: [1,2,3,4,5]}};
+            var model = obs.createModel(obj);
+            console.log(model.foo.bars.value);
+            model.foo.bars.swap(4,0);
+            console.log(model.foo.bars.value);
+            console.log(model.foo.bars);
+            console.log(model.foo.bars[0].path);
+        }
+
+        function move(list, from, count, to) {
+            var args = [from > to ? to : to - count, 0];
+            args.push.apply(args, list.splice(from, count));
+            list.splice.apply(list, args);
+            list.map(function(item, i, arr){item.key=i;});
+            return list;
+        }
+
+        </script>
+
+
+    </body>
+</html>
+

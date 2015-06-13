@@ -212,10 +212,36 @@ function ModelValueTriggers(observer) {
             var args = [];
             for (var i in arguments) if (i > 0) args.push(arguments[i]);
             var val = func.apply(this, args);
-            observer.triggers.runTrigger.bind(this)('set', [val, obj, this.path]);
+            observer.triggers.runTrigger.bind(this)('order', [Object.keys(this), obj, this.path]);
             return val;
         };
         defineProperty(obj[property], 'order');
+    }
+
+    function defineArrayMoveProperty(obj, property) {
+        obj[property]['move'] = function(from, count, to) {
+            var list = this;
+            var args = [from > to ? to : to - count, 0];
+            args.push.apply(args, list.splice(from, count));
+            list.splice.apply(list, args);
+            var val = Object.keys(this);
+            list.map(function(item, i, arr){item.key=i;});
+            observer.triggers.runTrigger.bind(this)('order', [val, obj, this.path]);
+        };
+        defineProperty(obj[property], 'move');
+    }
+
+    function defineArraySwapProperty(obj, property) {
+        obj[property]['swap'] = function(index1, index2) {
+            this[index1].key = index2;
+            this[index2].key = index1;
+            var list1 = this[index1];
+            var list2 = this[index2];
+            this[index1] = list2;
+            this[index2] = list1;
+            observer.triggers.runTrigger.bind(this)('order', [[index1, index2], obj, this.path]);
+        };
+        defineProperty(obj[property], 'swap');
     }
 
     // remove... like javascript slice but without third parameter
@@ -274,8 +300,11 @@ function ModelValueTriggers(observer) {
 
                 if (isArray(value)) {
                     // special methods for arrays/lists
-                    // push, remove, pop, shift, unshift are supported
-                    // especially for set trigger, which is launched by splice, shift and unshift functions.
+                    // push, remove, pop, shift, unshift, order and move are supported
+                    
+                    // arrayMutation is to give possbility to prevent set trigger, 
+                    // which is launched by splice, shift and unshift functions
+                    // unwisfully
                     model[property]['arrayMutation'] = true;
                     defineProperty(model[property], 'arrayMutation');
                 
@@ -284,6 +313,9 @@ function ModelValueTriggers(observer) {
                     defineArrayShiftProperty(model, property);
                     defineArrayUnShiftProperty(model, property);
                     defineArrayOrderProperty(model, property);
+                    defineArrayMoveProperty(model, property);
+                    defineArraySwapProperty(model, property);
+
                 }
             } else {
                 // value property with a new dictionary
@@ -362,6 +394,10 @@ function ModelValueTriggers(observer) {
             return value;
         },
         'remove': function (value, model, property, property_stack, parent) {
+            // console.log(this) -> cyclic object, but available!
+            return value;
+        },
+        'order': function (value, model, property, property_stack, parent) {
             // console.log(this) -> cyclic object, but available!
             return value;
         }

@@ -112,16 +112,22 @@ function BaseModelObserver() {
             'set': function(value, old_value, property_stack){return value;}
         });
 
-        // object/array handler
+        // object/array remove/delete handler
         interfaceFactory.create('remove', {
             // this is called everytime model attribute is set
             'remove': function(value, model, property, property_stack, parent){return value;}
         });
 
-        // array handler
+        // array add handler
         interfaceFactory.create('add', {
             // this is called everytime model attribute is set
             'add': function(value, model, property, property_stack, parent){return value;}
+        });
+
+        // array order handler
+        interfaceFactory.create('order', {
+            // this is called everytime model attribute is set
+            'order': function(value, model, property_stack){return value;}
         });
 
         this.defines = function(dict) {
