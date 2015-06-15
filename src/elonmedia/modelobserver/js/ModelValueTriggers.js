@@ -257,12 +257,12 @@ function ModelValueTriggers(observer) {
     function defineArraySwapProperty(obj, property) {
         obj[property]['swap'] = function(index1, index2) {
             var before = [];
-            for (var i in this) before.push(parseInt(list[i].key));
+            for (var i in this) before.push(parseInt(this[i].key));
             // update array item keys
             this[index1].key = index2;
             this[index2].key = index1;
             var after = [];
-            for (var i in this) after.push(parseInt(list[i].key));
+            for (var i in this) after.push(parseInt(this[i].key));
             var list1 = this[index1];
             var list2 = this[index2];
             // swap array items
