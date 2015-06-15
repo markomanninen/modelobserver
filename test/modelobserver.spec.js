@@ -378,19 +378,19 @@ describe('ModelValueTriggers', function () {
 
     });
 
-    it('Order array items (reverse)', function () {
+    it('Re-order array items (reverse)', function () {
 
         model.foo.bars.push(1, 2, 3);
         
-        model.foo.bars.order(Array.prototype.reverse);
+        model.foo.bars.reorder(Array.prototype.reverse);
 
         expect(model.foo.bars.value).toEqual({ 0: 3, 1: 2, 2: 1 });
 
     });
 
-    it('Order array items (sort)', function () {
+    it('Re-order array items (sort)', function () {
         model.foo.bars.push(3, 2, 1);
-        var a = model.foo.bars.order(
+        var a = model.foo.bars.reorder(
             Array.prototype.sort, 
             function(a,b) {
                 return a.value-b.value;

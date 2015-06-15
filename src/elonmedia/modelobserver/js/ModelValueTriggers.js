@@ -144,7 +144,7 @@ function ModelValueTriggers(observer) {
                 observer.triggers.runTrigger.bind(this)('add', [arguments, obj[property], this.length, this.path, this.parent]);
                 for (var i in arguments) {
                     if (typeof arguments[i] == 'object') {
-                        observer.createModel(arguments[i], this.path.slice(0), this.parent, i);
+                        observer.createModel(arguments[i], this.path.slice(0), this.parent, this.length);
                         this[this.length] = arguments[i];
                     } else {
                         observer.define(arguments[i], this, this.length, this.path.slice(), this.parent);
@@ -207,15 +207,24 @@ function ModelValueTriggers(observer) {
     }
 
     // order... reorder array in place according to given function
-    function defineArrayOrderProperty(obj, property) {
-        obj[property]['order'] = function(func) {
+    function defineArrayReOrderProperty(obj, property) {
+        obj[property]['reorder'] = function(func) {
             var args = [];
             for (var i in arguments) if (i > 0) args.push(arguments[i]);
+            
+            var before = [];
+            for (var i in this) before.push(parseInt(this[i].key));
+
             var val = func.apply(this, args);
-            observer.triggers.runTrigger.bind(this)('order', [Object.keys(this), obj, this.path]);
+
+            var after = [];
+            for (var i in this) after.push(parseInt(this[i].key));
+            // update array item keys
+            this.map(function(item, i){item.key=parseInt(i)});
+            observer.triggers.runTrigger.bind(this)('order', [['reorder', 0, 0, 0, before, after], obj, this.path]);
             return val;
         };
-        defineProperty(obj[property], 'order');
+        defineProperty(obj[property], 'reorder');
     }
 
     function defineArrayMoveProperty(obj, property) {
@@ -229,26 +238,37 @@ function ModelValueTriggers(observer) {
 
             var args = [from > to ? to : to + 1 - count, 0];
 
+            var before = [];
+            for (var i in this) before.push(parseInt(list[i].key));
+
             args.push.apply(args, list.splice(from, count));
+            
             list.splice.apply(list, args);
 
-            var val = Object.keys(this);
-            
-            list.map(function(item, i, arr){item.key=i;});
-            observer.triggers.runTrigger.bind(this)('order', [val, obj, this.path]);
+            var after = [];
+            for (var i in this) after.push(parseInt(list[i].key));
+            // update array item keys
+            list.map(function(item, i){item.key=i});
+            observer.triggers.runTrigger.bind(this)('order', [['move', from, count, to, before, after], obj, this.path]);
         };
         defineProperty(obj[property], 'move');
     }
 
     function defineArraySwapProperty(obj, property) {
         obj[property]['swap'] = function(index1, index2) {
+            var before = [];
+            for (var i in this) before.push(parseInt(list[i].key));
+            // update array item keys
             this[index1].key = index2;
             this[index2].key = index1;
+            var after = [];
+            for (var i in this) after.push(parseInt(list[i].key));
             var list1 = this[index1];
             var list2 = this[index2];
+            // swap array items
             this[index1] = list2;
             this[index2] = list1;
-            observer.triggers.runTrigger.bind(this)('order', [[index1, index2], obj, this.path]);
+            observer.triggers.runTrigger.bind(this)('order', [['swap', index1, 1, index2, before, after], obj, this.path]);
         };
         defineProperty(obj[property], 'swap');
     }
@@ -316,12 +336,13 @@ function ModelValueTriggers(observer) {
                     // unwisfully
                     model[property]['arrayMutation'] = true;
                     defineProperty(model[property], 'arrayMutation');
+                    defineProperty(model[property], 'order');
                 
                     defineArrayPushProperty(model, property);
                     defineArrayPopProperty(model, property);
                     defineArrayShiftProperty(model, property);
                     defineArrayUnShiftProperty(model, property);
-                    defineArrayOrderProperty(model, property);
+                    defineArrayReOrderProperty(model, property);
                     defineArrayMoveProperty(model, property);
                     defineArraySwapProperty(model, property);
 
