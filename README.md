@@ -17,23 +17,23 @@
 var obs = BaseModelObserver();
 
 var logger = {
-    initter: function(value, model, property, property_stack, parent) {
+    'init': function(value, model, property, property_stack, parent) {
         console.log(["init", value, model, property, property_stack.join('.'), parent]);
         return value;
     },
-    getter: function(value, property_stack) {
-        console.log(["get", value, property_stack.join('.'), this]);
+    'get': function(value, property_stack) {
+        console.log(["get",, property_stack.join('.')]);
         return value;
     },
-    setter: function(value, old_value, property_stack) {
-        console.log(["set", value, old_value, property_stack.join('.'), this]);
+    'set': function(value, old_value, property_stack) {
+        console.log(["set", value, old_value, property_stack.join('.')]);
         return value;
     }
 };
 
 // add a new log handler
 
-obs.handler.define(logger);
+obs.triggers.defines(logger);
 
 var obj = {foo: {bar: 1}};
 
@@ -41,6 +41,29 @@ var model = obs.createModel(obj);
 
 model.foo.bar = 2;
 
+console.log(model);
+
+
+```
+
+```js
+
+["init",{"foo":{"bar":1}},{"root":{"foo":{"bar":1}}},"root","root",null]
+["get","root"]
+["get","root"]
+["get","root"]
+["init",{"bar":1},{"foo":{"bar":1}},"foo","root.foo",{"root":{"foo":{"bar":1}}}]
+["get","root.foo"]
+["get","root.foo"]
+["get","root.foo"]
+["init",1,{"bar":1},"bar","root.foo.bar",{"foo":{"bar":1}}]
+["get","root.foo.bar"]
+["get","root"]
+["get","root.foo"]
+["set",2,1,"root.foo.bar"]
+["get","root.foo"]
+["get","root.foo.bar"]
+{"foo":{"bar":2}}
 
 ```
 

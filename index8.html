@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        
+        <meta charset="utf-8" />
+        
+        <title>Model Observer</title>
+<!--
+        <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
+-->
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
+
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
+<!--
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+-->
+        <style>
+            #console-log-div {
+              border: 1px solid gray;
+              padding: 10px 10px;
+              border-radius: 5px;
+              width: 95% !important;
+              background-color: #333;
+              color: yellow;
+            }
+            #console-log-text {
+                margin-top: -5px;
+                margin-bottom: 5px;
+            }
+            #console-log-div legend {
+                color: black;
+                position: relative;
+                top: -15px;
+                left: -10px;
+                font-size: 16px;
+                text-transform: capitalize;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
+
+        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
+        <script id="log">
+
+		var obs = BaseModelObserver();
+
+		var logger = {
+		    'init': function(value, model, property, property_stack, parent) {
+		        console.log(["init", value, model, property, property_stack.join('.'), parent]);
+		        return value;
+		    },
+		    'get': function(value, property_stack) {
+		        console.log(["get", property_stack.join('.')]);
+		        //console.log(["get", value, property_stack.join('.')]);
+		        return value;
+		    },
+		    'set': function(value, old_value, property_stack) {
+		        console.log(["set", value, old_value, property_stack.join('.')]);
+		        return value;
+		    }
+		};
+
+		// add a new log handler
+		obs.triggers.defines(logger);
+
+        $(document).ready(function() {
+            op1();
+        });
+
+        function op1() {
+
+            var obj = {foo: {bar: 1}};
+
+			var model = obs.createModel(obj);
+
+			model.foo.bar = 2;
+
+            console.log(model);
+        }
+
+        </script>
+
+
+    </body>
+</html>
+
