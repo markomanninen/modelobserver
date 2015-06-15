@@ -220,11 +220,20 @@ function ModelValueTriggers(observer) {
 
     function defineArrayMoveProperty(obj, property) {
         obj[property]['move'] = function(from, count, to) {
+            
             var list = this;
-            var args = [from > to ? to : to - count, 0];
+            var l = list.length-1;
+            
+            if (from > l) from = l; else if (from < 0) from = 0;
+            if (to > l) to = l; else if (to < 0) to = 0;
+
+            var args = [from > to ? to : to + 1 - count, 0];
+
             args.push.apply(args, list.splice(from, count));
             list.splice.apply(list, args);
+
             var val = Object.keys(this);
+            
             list.map(function(item, i, arr){item.key=i;});
             observer.triggers.runTrigger.bind(this)('order', [val, obj, this.path]);
         };

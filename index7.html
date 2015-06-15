@@ -115,7 +115,8 @@
 
         $(document).ready(function() {
             //op1();
-            op2();
+            //op2();
+            op3();
         });
 
         function op1() {
@@ -146,11 +147,19 @@
             console.log(model.foo.bars[0].path);
         }
 
+        function op3() {
+            var l = [1,2,3,4,5];
+            move(l, 0, 1, 1);
+            console.log(l);
+        }
+
         function move(list, from, count, to) {
-            var args = [from > to ? to : to - count, 0];
+            var l = list.length-1;
+            if (from > l) from = l; else if (from < 0) from = 0;
+            if (to > l) to = l; else if (to < 0) to = 0;
+            var args = [from > to ? to : to + 1 - count, 0];
             args.push.apply(args, list.splice(from, count));
             list.splice.apply(list, args);
-            list.map(function(item, i, arr){item.key=i;});
             return list;
         }
 
