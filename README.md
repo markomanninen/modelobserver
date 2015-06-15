@@ -22,7 +22,7 @@ var logger = {
         return value;
     },
     'get': function(value, property_stack) {
-        console.log(["get",, property_stack.join('.')]);
+        console.log(["get", property_stack.join('.')]);
         return value;
     },
     'set': function(value, old_value, property_stack) {
