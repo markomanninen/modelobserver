@@ -24,7 +24,7 @@ var logger = {
         return value;
     },
     'get': function(value, property_stack) {
-        console.log(["get", property_stack.join('.')]);
+        console.log(["get", value, property_stack.join('.')]);
         return value;
     },
     'set': function(value, old_value, property_stack) {
@@ -79,8 +79,6 @@ Bower: http://bower.io
 NPM: https://www.npmjs.com
 
 Gulp: http://gulpjs.com
-
-Karma: http://karma-runner.github.io/0.12/index.html
 
 Jasmine: http://jasmine.github.io
 
