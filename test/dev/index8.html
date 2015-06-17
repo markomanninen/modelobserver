@@ -12,8 +12,7 @@
 
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
 <!--
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormTriggers.js"></script>
 -->
         <style>
             #console-log-div {
@@ -43,19 +42,17 @@
 
         <script type="text/javascript" src="./bower_components/console-log-div/console-log-div.js"></script>
 
-        <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
-
         <script id="log">
 
 		var obs = BaseModelObserver();
 
 		var logger = {
 		    'init': function(value, model, property, property_stack, parent) {
-		        console.log(["init", value, model, property, property_stack.join('.'), parent]);
+		    	console.log(["init", value, model, property, property_stack.join('.'), parent]);
 		        return value;
 		    },
 		    'get': function(value, property_stack) {
-		        console.log(["get", property_stack.join('.')]);
+		        console.log(["get", value, property_stack.join('.')]);
 		        return value;
 		    },
 		    'set': function(value, old_value, property_stack) {
@@ -67,17 +64,27 @@
 		// add a new log handler
 		obs.triggers.defines(logger);
 
-        $(document).ready(function() {
-            op1();
-        });
+        op1();
+        //op2();
 
         function op1() {
 
             var obj = {foo: {bar: 1}};
 
 			var model = obs.createModel(obj);
-
+			
 			model.foo.bar = 2;
+
+            console.log(model);
+        }
+
+        function op2() {
+
+            var obj = {foo: 1};
+
+			var model = obs.createModel(obj);
+
+			model.foo = 2;
 
             console.log(model);
         }

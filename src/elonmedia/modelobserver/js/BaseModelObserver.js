@@ -77,24 +77,13 @@ function BaseModelObserver() {
 
     observer.triggerApi = function() {
 
-        //var trigger_key_order = 'order';
         var functions = {};
         var binders = {};
 
-        /*
-        triggerApi.create('add', function(value, parent, property_stack){return value});
-        triggerApi.create('remove', function(value, parent, property_stack){return value});
-        */
         this.create = function(name, func) {
             var d = {}; d[name] = func;
             interfaceFactory.create(name, d);
         };
-
-        /*
-        this.create('init', function(value, model, property, property_stack, parent){return value});
-        this.create('get', function(value, property_stack){return value});
-        this.create('set', function(value, old_value, property_stack){return value});
-        */
 
         // defines interfaces for triggers
         interfaceFactory.create('init', {
@@ -108,25 +97,25 @@ function BaseModelObserver() {
         });
 
         interfaceFactory.create('set', {
-            // this is called everytime model attribute is set
+            // this is called everytime model attribute is set/updated
             'set': function(value, old_value, property_stack){return value;}
         });
 
         // object/array remove/delete handler
         interfaceFactory.create('remove', {
-            // this is called everytime model attribute is set
+            // this is called everytime model attribute or array item is removed
             'remove': function(value, model, property, property_stack, parent){return value;}
         });
 
         // array add handler
         interfaceFactory.create('add', {
-            // this is called everytime model attribute is set
+            // this is called everytime array item is added
             'add': function(value, model, property, property_stack, parent){return value;}
         });
 
-        // array order handler
+        // array order/rearrange/sort handler
         interfaceFactory.create('order', {
-            // this is called everytime model attribute is set
+            // this is called everytime array items are sorted
             'order': function(value, model, property_stack){return value;}
         });
 
@@ -137,7 +126,7 @@ function BaseModelObserver() {
             }
         };
 
-        // trigger keys: init, get, set, add, remove.
+        // trigger keys: init, get, set, add, remove, order.
         this.define = function(trigger_key, trigger) {
             var handlerImplementations = interfaceFactory.implement(trigger_key, trigger);
             for (var name in trigger) {
@@ -176,22 +165,29 @@ function BaseModelObserver() {
 
     observer.createModel = function(model, properties, parent, root_name) {
         // create temporary root for model
-        var root_name = typeof root_name != "undefined" ? root_name : 'root';
-        // temporary root handler
-        var root = {};
-        root[root_name] = model;
-        var mod = observer.rec(root, properties, parent);
-        return mod[root_name];
+        var root_name = root_name !== undefined ? root_name : 'root';
+        // temporary root handler. This is going to trigger the first
+        // getter, so there might be a better way to do this. basicly it is done
+        // to allow different root names for paths as well as to allow
+        // special properties for root element
+        var root = {}; root[root_name] = model;
+        return observer.rec(root, properties, parent)[root_name];
     };
-
+/*
+    observer.createModel = function(model, properties, parent) {
+        return observer.rec(model, properties, parent);
+    };
+*/
     // recursive model iterator
     observer.rec = function(obj, properties, parent) {
         var properties = properties || [];
         for (var property in obj) {
             properties.push(property);
-            observer.define(obj[property], obj, property, properties.slice(), parent);
-            if (typeof obj[property] === "object")
-                observer.rec(obj[property], properties, obj);
+            // get value here to prevent getter triggering at the model creation time
+            var value = obj[property];
+            observer.define(value, obj, property, properties.slice(), parent);
+            if (typeof value === "object")
+                observer.rec(value, properties, obj);
             properties.pop();
         }
         return obj;
