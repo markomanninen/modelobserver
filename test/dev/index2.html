@@ -9,7 +9,7 @@
         <script type="text/javascript" src="./dist/modelobserver.min.js"></script>
 -->
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/BaseModelObserver.js"></script>
-        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelObserverHandlers.js"></script>
+        <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelValueTriggers.js"></script>
         <script type="text/javascript" src="./src/elonmedia/modelobserver/js/ModelFormHandlers.js"></script>
 
         <style>
@@ -44,27 +44,55 @@
 
         <script id="log">
 
-        var obs = BaseModelObserver();
-        var moh = ModelObserverHandlers(obs);
+        var obs = new BaseModelObserver();
+        var moh = new ModelValueTriggers(obs);
+
+        obs.triggers.defines(moh.valueTriggers);
 
         $(document).ready(function() {
-            op5();
+            op4();
         });
 
-        function op5() {
+        function op4() {
 
-            obs.handler.define(moh.valueHandler);
-
-            var obj = {foo: []};
+            var obj = {foo: {bars: [1,2]}};
 
             var model = obs.createModel(obj);
 
-            model.foo.push({bar: []});
+            model.foo.bars.push(3);
+            console.log(model.foo.bars.value);
 
-            model.foo[0].bar.push({});
+            model.foo.bars = {3:4};
+            console.log(model.foo.bars.value);
 
+            
+            obj.foo.bars = null;
+            console.log(model.foo.bars.value);
+
+            delete obj.foo.bars;
+            try {
+				console.log(model.foo.bars.value);
+            } catch (e) {
+            	console.log(e.toString());
+            }
+            
+
+            var obj = {
+            	foo: {
+            		bar: 1, 
+            		bar2: function() {
+            			return this.parent.bar.value;
+            		}
+            	}
+            };
+
+            var model = obs.createModel(obj);
+            console.log(model.foo.bar.value);
+
+            model.foo.bar = 2;
+            console.log(model.foo.bar2.value());
+            
             console.log(model);
-
         }
 
         </script>
