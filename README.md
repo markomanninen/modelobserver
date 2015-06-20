@@ -62,7 +62,7 @@ Output:
 
 ### Model Value Triggers
 
-Model value triggers library adds several properties to the base model observer. Main purpose of this is to enable access control to the model, removal function and add basic array manipulation functionality with triggers. Basicly you use this library as follows:
+Model value triggers library adds several properties to the base model observer. Main purpose of this is to enable access control to the model, add branch/node removal and array manipulation functionality with three new triggers namely: remove, add and order. Basicly you use this library as follows:
 
 ```js
 var obs = BaseModelObserver();
@@ -74,11 +74,13 @@ var obj = {foo: {bar: 'baz', bars: []}};
 var model = obs.createModel(obj);
 ```
 
-After initialization you have several new properties and function available which will be introduced next. Note that all new properties and function names are now reserved word on the model, so they shouldn't be used or overwritten on model attributes.
+After initialization you have several new properties and functions available which will be introduced next. Note that all new properties and function names are now reserved words on the model, so they shouldn't be used or overwritten with model attributes.
 
 #### Value property
 
-The most fundamental of the new properties of the model is a value property. While model observer without value triggers allows traditional property retrieval, model value triggers change the functionality to enhance model. In short you should always use `model.branch.node.value` to get the value of the wanted property. If value property is provoked for a branch like: `model.branch` it will output object data in json object format. Note that array is still an object. Only scalar values like numbers, strings, null and undefined are regarded as node values. Few examples should make this more clear:
+The most fundamental one of new properties of the model is a value property. While model observer without value triggers allows traditional property retrieval, model value triggers change the functionality to enhance model. So now you should use `model.branch.node.value` to get the value of the wanted property. If value property is provoked for a branch like: `model.branch` it will output object data in json object format. Note that non scalar array is still an object, not a node. Only scalar values like numbers, strings, null and undefined are regarded as node values.
+
+Few examples should show how to use value property:
 
 ```
 console.log(model.foo.bar.value) -> "baz"
@@ -86,7 +88,7 @@ console.log(model.foo.bar.value) -> "baz"
 console.log(model.foo.value) -> {bar: "baz", "bars": []}
 ```
 
-But setting values should be done via node property instead of value property:
+Setting values should be done via plain property instead of value property:
 
 ```
 model.foo.bar = "BAZ"
@@ -94,7 +96,7 @@ model.foo.bar = "BAZ"
 console.log(model.foo.bar.value) -> "BAZ"
 ```
 
-You can also set values for branches. Object will examined. Properties available already on model will get the new value. All new branches and nodes of the value will be enchanged by new functionality. For example:
+You can also set values for branches. Object structure will be examined. Properties available already on model will get the new value. All new branches and nodes of the value will be enchanged by new functionality. For example:
 
 ```
 model.foo = {bar: "baz1", bar2: "baz2"}
@@ -155,7 +157,7 @@ console.log(model.updated == model.foo.bar.updated) -> true
 
 #### Can get and set properties
 
-Can get can can set properties can be used to constrol access to the properties. Similar to updated functionality, these proerpties will have an effect to all child branches and nodes. Examples will show it best:
+Can get can can set properties can be used to control access to the properties. Similar to updated functionality, these prorepties will have an effect to all child branches and nodes. Examples will show it best:
 
 
 ```
