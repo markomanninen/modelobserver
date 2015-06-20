@@ -46,14 +46,11 @@ var model = obs.createModel(obj);
 model.foo.bar = 2;
 
 console.log(model);
-
-
 ```
 
 Output:
 
 ```js
-
 ["init",{"foo":{"bar":1}},{"root":{"foo":{"bar":1}}},"root","root",null]
 ["init",{"bar":1},{"foo":{"bar":1}},"foo","root.foo",{"root":{"foo":{"bar":1}}}]
 ["init",1,{"bar":1},"bar","root.foo.bar",{"foo":{"bar":1}}]
@@ -61,7 +58,6 @@ Output:
 ["get",{"bar":1},"root.foo"]
 ["set",2,1,"root.foo.bar"]
 {"foo":{"bar":2}}
-
 ```
 
 ### Model Value Triggers
@@ -69,7 +65,6 @@ Output:
 Model value triggers library adds several properties to the base model observer. Main purpose of this is to enable access control to the model, removal function and add basic array manipulation functionality with triggers. Basicly you use this library as follows:
 
 ```js
-
 var obs = BaseModelObserver();
 var mvt = ModelValueTriggers(obs);
 
@@ -77,7 +72,6 @@ obs.triggers.defines(mvt.valueTriggers);
 
 var obj = {foo: {bar: 'baz', bars: []}};
 var model = obs.createModel(obj);
-
 ```
 
 After initialization you have several new properties and function available which will be introduced next. Note that all new properties and function names are now reserved word on the model, so they shouldn't be used or overwritten on model attributes.
@@ -87,31 +81,25 @@ After initialization you have several new properties and function available whic
 The most fundamental of the new properties of the model is a value property. While model observer without value triggers allows traditional property retrieval, model value triggers change the functionality to enhance model. In short you should always use `model.branch.node.value` to get the value of the wanted property. If value property is provoked for a branch like: `model.branch` it will output object data in json object format. Note that array is still an object. Only scalar values like numbers, strings, null and undefined are regarded as node values. Few examples should make this more clear:
 
 ```
-
 console.log(model.foo.bar.value) -> "baz"
 
 console.log(model.foo.value) -> {bar: "baz", "bars": []}
-
 ```
 
 But setting values should be done via node property instead of value property:
 
 ```
-
 model.foo.bar = "BAZ"
 
 console.log(model.foo.bar.value) -> "BAZ"
-
 ```
 
 You can also set values for branches. Object will examined. Properties available already on model will get the new value. All new branches and nodes of the value will be enchanged by new functionality. For example:
 
 ```
-
 model.foo = {bar: "baz1", bar2: "baz2"}
 
 console.log(model.foo.value) -> {bar: "baz1", bar2: "baz2", "bars": []}
-
 ```
 
 This concludes changing values and setting/adding new properties to the model. You can very well start a model with empty object if you will like: `obs.createModel({})`. Array manipulation will be discussed later.
@@ -156,7 +144,6 @@ Created and updated properties are pretty much self explanatory. Created is an i
 
 
 ```
-
 console.log(model.foo.bar.updated) -> undefined
 
 model.foo.bar = "BAZ"
@@ -164,7 +151,6 @@ model.foo.bar = "BAZ"
 console.log(model.foo.bar.updated) -> "2015-06-20T19:06:14.810Z"
 
 console.log(model.updated == model.foo.bar.updated) -> true
-
 ```
 
 #### Can get and set properties
@@ -173,13 +159,11 @@ Can get can can set properties can be used to constrol access to the properties.
 
 
 ```
-
 model.canget = false
 
 console.log(model.foo.bar.value) -> undefined
 console.log(model.foo.value) -> {}
 console.log(model.value) -> {}
-
 ```
 
 But note that accessing property instead of value will still give all other functionality of the model allowing operations with the model. Just the value will be blocked from access.
@@ -187,14 +171,12 @@ But note that accessing property instead of value will still give all other func
 Can set can be used similar ways, but now preventing giving new values from the branches or nodes.
 
 ```
-
 model.canget = true
 model.canset = false
 
 model.foo.bar = "BAZ"
 
 console.log(model.foo.bar.value) -> "baz"
-
 ```
 
 
@@ -203,17 +185,15 @@ console.log(model.foo.bar.value) -> "baz"
 Branch and node properties are simply boolean values to point out hierachal position of the property. To simplify the load of the properties only true values will be listed on model. Root will have branch as true, but node as undefined. On the example model you can find these behaviours:
 
 ```
-
 console.log(model.branch) -> true
 console.log(model.node) -> undefined
 console.log(model.foo.bar.branch) -> undefined
 console.log(model.foo.bar.node) -> true
 console.log(model.foo.bars.branch) -> true
 console.log(model.foo.bars.node) -> undefined
-
 ```
 
-Along with these new properties: value, parent, key, path, created, updated, canget, canset, branch, node also new functions are added to the model. They will be presented next.
+Along with these new properties: `value, parent, key, path, created, updated, canget, canset, branch, node` also new functions are added to the model. They will be presented next.
 
 #### Remove
 
@@ -230,6 +210,28 @@ Along with these new properties: value, parent, key, path, created, updated, can
 #### Swap
 
 #### Order
+
+Finally three new triggers are available in this model. Basic model observer has `init, set and get` triggers. Now they will have a companion of `remove, add and order` triggers. Usage of the triggers is similar to base model example and shown below:
+
+```js
+
+var logger = {
+    'remove': function(value, model, property, property_stack, parent) {
+        console.log(["remove", value, model, property, property_stack.join('.'), parent]);
+        return value;
+    },
+    'add': function(value, model, property, property_stack, parent) {
+        console.log(["add", value, property_stack.join('.')]);
+        return value;
+    },
+    'order': function(value, model, property_stack) {
+        console.log(["order", value, model, property_stack.join('.')]);
+        return value;
+    }
+};
+
+obs.triggers.defines(logger);
+```
 
 ### Model Form Triggers
 
